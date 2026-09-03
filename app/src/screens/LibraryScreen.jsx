@@ -271,17 +271,19 @@ export default function LibraryScreen() {
           {rows.length === 0 && !creating && (
             <div className="empty empty-plain">
               <Icon name="search" size={32} style={{ color: 'var(--fainter)' }} />
-              <p>{t('library.empty')}</p>
-              <button
-                className="ghost"
-                onClick={() => {
-                  setQuery('');
-                  setGroup('all');
-                  setKey('all');
-                }}
-              >
-                {t('library.resetFilters')}
-              </button>
+              <p>{songs.length === 0 ? t('library.emptyNone') : t('library.empty')}</p>
+              {songs.length > 0 && (
+                <button
+                  className="ghost"
+                  onClick={() => {
+                    setQuery('');
+                    setGroup('all');
+                    setKey('all');
+                  }}
+                >
+                  {t('library.resetFilters')}
+                </button>
+              )}
             </div>
           )}
         </div>

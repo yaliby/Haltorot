@@ -2,8 +2,8 @@
 
 A band's rehearsals, setlists and chord charts in one place.
 React + Vite over Supabase — the schedule, the library and every chart live in
-Postgres. Without credentials the app still runs on the shipped demo content,
-which is what the SSR test renders against.
+Postgres. Without credentials the app still runs with an empty library and
+calendar, which is what the SSR test renders against.
 
 ```bash
 npm install
@@ -18,14 +18,14 @@ npm run db:test  # drives the real database through the running app
 
 ```bash
 npm run db:apply    # create/refresh the schema (idempotent)
-npm run db:seed     # load src/data.js into it; --force to replace what is there
+npm run db:seed     # load members and rooms; --force to replace what is there
 npm run db:backup   # dump every table to db/backups/
 npm run db:restore  # put a dump back, in one transaction
 npm run db:test     # 60 checks, driven through the running app
 ```
 
 `db/schema.sql` is the whole story: six tables, plus a `replace_all` function
-that undo and "reset demo data" use so a full rewrite lands in one transaction
+that undo uses so a full rewrite lands in one transaction
 rather than leaving the schedule torn for several seconds.
 
 `npm run db:test` is the real proof the wiring holds. It clicks the actual UI —
@@ -66,8 +66,7 @@ a page of its own.
 
 ```
 src/
-  data.js               demo content (band, songs, charts, schedule) — the seed
-                        for the database, and the fallback when there is none
+  data.js               band, rooms — the library and calendar start empty
   store.jsx             one reducer + context; the reducer stays the source of
                         truth on screen and the database is written through
                         after each action, so the UI never waits on the network

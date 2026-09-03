@@ -3,19 +3,21 @@ globalThis.localStorage = { getItem: () => null, setItem: () => {}, removeItem: 
 
 console.error = () => {}; // react-router's useLayoutEffect SSR noise
 const { render } = await import('./dist/entry.js');
+const { TODAY } = await import('../src/data.js');
+const { monthName, parseISO, longDate } = await import('../src/lib/dates.js');
+
+const { m } = parseISO(TODAY);
+const thisMonth = monthName(m, 'en');
+const todayLong = longDate(TODAY, 'en');
 
 const routes = [
-  ['/',                          ['August', 'Static Bloom', 'TONIGHT', 'Open rehearsal']],
-  ['/songs',                     ['Songs', 'Copper Line', 'Collections', 'Come Together', 'Import online']],
-  ['/rehearsal/2026-08-29',      ['August 29', 'REHEARSAL', 'Setlist', '19:00', 'Studio 9', 'Half Past Nowhere']],
-  ['/rehearsal/2026-09-05',      ['September 5', 'Levontin 7', 'SHOW']],
+  ['/',                          [thisMonth, 'Static Bloom', 'Add rehearsal', 'Nothing scheduled']],
+  ['/songs',                     ['Songs', 'Collections', 'Import online', 'The library is empty']],
+  [`/rehearsal/${TODAY}`,        [todayLong, 'Nothing is booked', 'Book a rehearsal']],
   ['/rehearsal/2026-12-01',      ['Nothing is booked', 'Book a rehearsal']],
   ['/rehearsal/not-a-date',      ['is not a date on the calendar', 'Back to the calendar']],
-  ['/song/copper-line?from=2026-08-29', ['Copper Line', '>KEY<', 'Hold the note', 'Structure', 'Band note']],
-  ['/song/room-12',              ['Room 12', 'No chart for Room 12 yet']],
   ['/song/nope',                 ['isn']],
-  ['/song/copper-line?from=not-a-date', ['Copper Line', '>Songs<']],
-  ['/song/northbound?from=2026-08-29',  ['Stage mode', 'Up next']]
+  ['/song/nope?from=not-a-date', ['isn', '>Songs<']]
 ];
 
 let fail = 0;

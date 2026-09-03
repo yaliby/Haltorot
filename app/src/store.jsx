@@ -13,7 +13,7 @@ import { applyDocumentLocale, translate } from './i18n/translate.js';
 import { dbEnabled, loadAll, persist } from './lib/db.js';
 import { DEFAULT_THEME, applyDocumentTheme } from './theme.js';
 
-const KEY = 'static-bloom.v1';
+const KEY = 'static-bloom.v2';
 const StoreCtx = createContext(null);
 
 const initial = (locale = DEFAULT_LOCALE, theme = DEFAULT_THEME) => ({
@@ -70,11 +70,10 @@ function load(initialLocale) {
     const locale = initialLocale || (saved.locale === 'en' ? 'en' : DEFAULT_LOCALE);
     const theme = saved.theme === 'light' ? 'light' : DEFAULT_THEME;
     /* With a database behind us the schedule and the library live there, and
-       localStorage is left holding only what belongs to this device. The
-       shipped demo content is what the first paint shows until `hydrate`
-       lands — and it is what the SSR smoke test renders. */
+       localStorage is left holding only what belongs to this device. Until
+       `hydrate` lands the first paint is an empty library and calendar. */
     if (dbEnabled) return initial(locale, theme);
-    // Charts stay code-owned; scheduling state and songs the band added are restored.
+    // Scheduling state and songs the band added are restored.
     const custom = (Array.isArray(saved.custom) ? saved.custom : [])
       .filter(isSong)
       .filter((s) => !SONGS.some((o) => o.id === s.id))
@@ -83,8 +82,8 @@ function load(initialLocale) {
         sections: Array.isArray(s.sections) ? s.sections : [],
         custom: true
       }));
-    /* Charts are code-owned, but a chart the band has re-aligned is theirs —
-       keep the edit and lay it back over the shipped song on the next load. */
+    /* A chart the band has re-aligned stays theirs — keep the edit and lay
+       it back over that song on the next load. */
     const charts = saved.charts && typeof saved.charts === 'object' ? saved.charts : {};
     // Rooms the band added themselves; the three shipped ones always stay.
     const rooms = (Array.isArray(saved.rooms) ? saved.rooms : [])
@@ -214,7 +213,7 @@ export function reducer(state, action) {
       };
     }
 
-    /** Only songs the band added here can be deleted — code-owned ones stay. */
+    /** Only songs the band added here can be deleted. */
     case 'remove-from-library': {
       const song = state.songs.find((s) => s.id === action.songId);
       if (!isDeletableSong(song)) {
@@ -268,7 +267,7 @@ export function reducer(state, action) {
       return { ...state, events: nextEvents, songs: nextSongs };
     }
 
-    /** The database has answered; its rows replace the shipped demo content. */
+    /** The database has answered; its rows replace the empty first paint. */
     case 'hydrate':
       return {
         ...state,
@@ -342,7 +341,7 @@ export function StoreProvider({ children, initialLocale }) {
       })
       .catch((e) => {
         if (!live) return;
-        log.warn('hydrate failed, staying on shipped content', { error: e.message });
+        log.warn('hydrate failed, staying on empty first paint', { error: e.message });
         setHydrating(false);
         notifyRef.current?.(translate(localeRef.current, 'common.loadFailed'));
       });
@@ -362,7 +361,7 @@ export function StoreProvider({ children, initialLocale }) {
   useEffect(() => {
     try {
       const custom = state.songs.filter((s) => isDeletableSong(s));
-      // A custom song carries its own chart; a shipped one only needs the diff.
+      // A custom song carries its own chart; an older row only needs the diff.
       const charts = {};
       for (const s of state.songs) {
         if (s.chartEdited && !isDeletableSong(s)) charts[s.id] = s.sections;

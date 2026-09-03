@@ -11,7 +11,7 @@ const browser = await chromium.launch({ executablePath: chrome, headless: true, 
 async function run(name, { locale = 'he', theme = 'dark', url, w = 390, h = 844, scrollTo = 0 }) {
   const context = await browser.newContext({ viewport: { width: w, height: h }, deviceScaleFactor: 2, isMobile: w < 900, hasTouch: w < 900, locale: 'he-IL' });
   await context.addInitScript(([l, t]) => {
-    localStorage.setItem('static-bloom.v1', JSON.stringify({ locale: l, theme: t }));
+    localStorage.setItem('static-bloom.v2', JSON.stringify({ locale: l, theme: t }));
   }, [locale, theme]);
   const page = await context.newPage();
   await page.goto(url, { waitUntil: 'networkidle' });

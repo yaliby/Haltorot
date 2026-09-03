@@ -23,7 +23,7 @@ create table if not exists rooms (
 );
 
 create table if not exists songs (
-  id            text primary key,          -- slug: 'copper-line'
+  id            text primary key,          -- slug the library already uses
   title         text not null,
   artist        text not null default '',
   key           text not null default '',
@@ -97,7 +97,7 @@ drop trigger if exists events_touch on events;
 create trigger events_touch before update on events
   for each row execute function touch_updated_at();
 
--- Undo and "reset demo data" both replace the whole world. Doing that as a
+-- Undo replaces the whole world. Doing that as a
 -- few dozen round trips leaves the database visibly torn for several seconds,
 -- and loses data outright if the tab closes midway. One function, one
 -- transaction: it either all lands or none of it does.

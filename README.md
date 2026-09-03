@@ -12,7 +12,7 @@ cd app
 npm install
 cp .env.example .env   # project URL + publishable key
 npm run db:apply       # create the schema
-npm run db:seed        # load the demo content into it
+npm run db:seed        # load members and rooms (the library starts empty)
 npm run dev            # http://127.0.0.1:5174
 npm run build
 npm test               # renders every route + 49 logic checks
@@ -20,9 +20,9 @@ npm run db:test        # 60 checks driven through the running app, against the r
 ```
 
 React 18 + Vite + React Router over Supabase — the schedule, the library and
-every chart live in Postgres. With no credentials configured the app falls back
-to the shipped demo content, so it still runs and still tests. The rail's
-"Reset demo data" rewrites the database back to that seed in one transaction.
+every chart live in Postgres. With no credentials the app still runs, with an
+empty library and calendar, so it still tests. Songs are added in the library
+or imported; they are not shipped in the bundle.
 
 See `app/README.md` for the schema, and for which credential is allowed where —
 the publishable key ships in the browser bundle, the secret key never does.
@@ -108,9 +108,3 @@ The generated canvas bundle itself is not committed — reseed it from `design/`
 | `/rehearsal/:date` | The setlist — drag to reorder, tick off what you've run, edit or delete the booking |
 | `/song/:id` | Chords over lyrics, with transpose, text sizing and stage mode |
 | `/songs` | The library, filtered by collection and key; new songs are added here |
-
-## Demo content
-
-The band is fictional. Covers carry real title/artist metadata as a real setlist
-would; every full lyric sheet is an original written for this project, so no
-copyrighted lyrics ship here.

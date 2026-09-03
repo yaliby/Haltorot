@@ -1,11 +1,12 @@
-// Seeds the database from src/data.js — the demo band, its songs and schedule.
-// Idempotent: re-running replaces the seeded rows. Refuses to clobber a
-// database that has grown beyond the seed unless you pass --force.
+// Seeds members and rooms from src/data.js. The library and calendar start
+// empty — the band adds those itself. Idempotent: re-running replaces the
+// seeded rows. Refuses to clobber a database that already holds songs or
+// events unless you pass --force.
 import { BAND, SONGS, EVENTS, ROOMS, TODAY } from '../src/data.js';
 import { withDb } from './client.mjs';
 
 const force = process.argv.includes('--force');
-/** '2 days ago' -> an absolute timestamp, counted back from the demo's today. */
+/** '2 days ago' -> an absolute timestamp, counted back from today. */
 function noteTimestamp(age) {
   if (!age) return null;
   const m = age.match(/^(\d+)\s+(day|week|month)s?\s+ago$/);

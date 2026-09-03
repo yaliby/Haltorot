@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { Icon, Logo } from './Icon.jsx';
 import { LanguageToggle } from './LanguageToggle.jsx';
@@ -32,28 +32,6 @@ function MonthStats() {
         </div>
       </div>
     </div>
-  );
-}
-
-/** The demo edits itself into localStorage — this is the way back. */
-function ResetDemo() {
-  const { dispatch, notify } = useStore();
-  const { t } = useI18n();
-  const [armed, setArmed] = useState(false);
-
-  return (
-    <button
-      className="reset-demo"
-      onClick={() => {
-        if (!armed) { setArmed(true); return; }
-        dispatch({ type: 'reset' });
-        setArmed(false);
-        notify(t('shell.demoRestored'));
-      }}
-      onBlur={() => setArmed(false)}
-    >
-      {armed ? t('shell.resetConfirm') : t('shell.resetDemo')}
-    </button>
   );
 }
 
@@ -96,7 +74,6 @@ export function Shell({ children }) {
               </div>
             ))}
           </div>
-          <ResetDemo />
         </div>
       </aside>
 

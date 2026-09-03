@@ -16,8 +16,8 @@ const env = (typeof import.meta !== 'undefined' && import.meta.env) || {};
 const URL = env.VITE_SUPABASE_URL;
 const KEY = env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
-/* No credentials means no database: the app falls back to the shipped demo
-   content, which is exactly what the SSR smoke test renders against. */
+/* No credentials means no database: the app starts with an empty library
+   and calendar, which is exactly what the SSR smoke test renders against. */
 export const dbEnabled = Boolean(URL && KEY);
 
 export const supabase = dbEnabled
@@ -142,7 +142,7 @@ async function writeSetlist(date, ev) {
 }
 
 /**
- * Push the whole world, for undo and for "reset demo data". This goes through
+ * Push the whole world, for undo. This goes through
  * one server-side function rather than a few dozen round trips: replacing the
  * schedule piecemeal leaves the database torn for seconds at a time, and loses
  * data outright if the tab closes halfway. See replace_all in db/schema.sql.

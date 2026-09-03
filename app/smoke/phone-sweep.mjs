@@ -224,10 +224,10 @@ const HEB = {
 async function hebrewFlow(page, tag) {
   await page.goto(`${BASE}/songs`, { waitUntil: 'networkidle' });
   await page.evaluate((song) => {
-    const raw = localStorage.getItem('static-bloom.v1');
+    const raw = localStorage.getItem('static-bloom.v2');
     const saved = raw ? JSON.parse(raw) : {};
     const custom = (saved.custom || []).filter((s) => s.id !== song.id);
-    localStorage.setItem('static-bloom.v1', JSON.stringify({ ...saved, custom: [...custom, song] }));
+    localStorage.setItem('static-bloom.v2', JSON.stringify({ ...saved, custom: [...custom, song] }));
   }, HEB);
   await page.goto(`${BASE}/song/${HEB.id}`, { waitUntil: 'networkidle' });
   await settle(page, 500);
@@ -306,9 +306,9 @@ for (const phone of PHONES) {
       await page.goto(BASE, { waitUntil: 'networkidle' });
       await page.evaluate(
         ([l, th]) => {
-          const raw = localStorage.getItem('static-bloom.v1');
+          const raw = localStorage.getItem('static-bloom.v2');
           const saved = raw ? JSON.parse(raw) : {};
-          localStorage.setItem('static-bloom.v1', JSON.stringify({ ...saved, locale: l, theme: th }));
+          localStorage.setItem('static-bloom.v2', JSON.stringify({ ...saved, locale: l, theme: th }));
         },
         [locale, theme]
       );

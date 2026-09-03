@@ -18,8 +18,8 @@ const BASE = process.env.BASE || 'http://127.0.0.1:5174';
 const CHROME =
   process.env.CHROME ||
   '/home/yaliby/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome';
-const FREE = '2026-12-01';        // no booking in the shipped schedule
-const BUSY = '2026-08-29';        // the one with a setlist and attendance
+const FREE = '2026-12-01';        // no booking unless a test creates one
+const BUSY = '2026-11-15';        // fixture rehearsal the suite inserts
 
 let fail = 0;
 let section = '';
@@ -111,6 +111,24 @@ async function openPicker() {
 }
 
 try {
+  const FIX_CHART = [{ label: 'V', bars: '4', lines: [[{ c: 'D', t: 'hello there' }]] }];
+  await q(`delete from events where date = $1`, [BUSY]);
+  await q(`delete from songs where id in ('fx-one','fx-two','fx-three')`);
+  await q(
+    `insert into songs (id,title,artist,key,bpm,sec,own,custom,sections)
+     values ('fx-one','Fixture One','Probe','D',96,180,true,true,$1::jsonb),
+            ('fx-two','Fixture Two','Probe','G',110,200,true,true,'[]'::jsonb),
+            ('fx-three','Fixture Three','Probe','A',90,160,true,true,'[]'::jsonb)`,
+    [JSON.stringify(FIX_CHART)]
+  );
+  await q(`insert into events (date, kind, time, end_time, place)
+           values ($1, 'r', '19:00', '22:00', 'יניב')`, [BUSY]);
+  await q(`insert into event_songs (event_date, song_id, pos, done)
+           values ($1,'fx-one',0,false), ($1,'fx-two',1,true), ($1,'fx-three',2,false)`, [BUSY]);
+  await q(`insert into attendance (event_date, member_id, status)
+           values ($1, 'maya', 'in')
+           on conflict (event_date, member_id) do update set status = 'in'`, [BUSY]);
+
   // ── schema and integrity, before anything moves ───────────────────────
   head('schema and integrity');
   const rls = await q(
@@ -160,7 +178,7 @@ try {
   await go('/songs');
   let body = await page.textContent('body');
   check('library hydrates from Postgres', body.includes('DBPROBE Only In Postgres'));
-  check('shipped songs still render', body.includes('Copper Line'));
+  check('fixture songs render', body.includes('Fixture One'));
   await q(`delete from songs where id = 'db-probe'`);
 
   const html = await page.content();
@@ -172,8 +190,8 @@ try {
   const seeded = await q(
     `select s.title from event_songs es join songs s on s.id = es.song_id
       where es.event_date = $1 order by es.pos`, [BUSY]);
-  check('a seeded setlist renders in database order',
-        seeded.every((t) => body.includes(t.title)), `${seeded.length} songs`);
+  check('a fixture setlist renders in database order',
+        seeded.length > 0 && seeded.every((t) => body.includes(t.title)), `${seeded.length} songs`);
 
   // ── writing: booking, setlist, order ─────────────────────────────────
   head('writing');
@@ -258,9 +276,9 @@ try {
   const del = await page.$('button.lib-del');
   check('only band-added songs offer a delete', !!del);
   const delCount = (await page.$$('button.lib-del')).length;
-  const customCount = (await one(`select count(*)::int c from songs where custom`)).c;
-  check('the delete button matches the custom songs', delCount === customCount,
-        `${delCount} buttons, ${customCount} custom`);
+  const songCount = (await one(`select count(*)::int c from songs`)).c;
+  check('every song in the library can be deleted', delCount === songCount,
+        `${delCount} buttons, ${songCount} songs`);
   // Delete the probe specifically, not whichever row came first.
   const probeDel = await page.$(`button.lib-del[aria-label*="PROBE Deletable"]`);
   if (probeDel) { await probeDel.click(); await page.waitForTimeout(1500); }
@@ -269,8 +287,8 @@ try {
 
   // ── charts ───────────────────────────────────────────────────────────
   head('charts');
-  await go('/song/copper-line');
-  const chartBefore = (await one(`select sections from songs where id = 'copper-line'`)).sections;
+  await go('/song/fx-one');
+  const chartBefore = (await one(`select sections from songs where id = 'fx-one'`)).sections;
   const alignBtn = await page.$('button.chart-edit-btn');
   check('the chart offers an align mode', !!alignBtn);
   await step('align mode opens and saves', async () => {
@@ -282,7 +300,7 @@ try {
     await page.click('.align-acts button.btn', { timeout: 8000 });
     await page.waitForTimeout(1600);
   });
-  const chartAfter = (await one(`select sections from songs where id = 'copper-line'`)).sections;
+  const chartAfter = (await one(`select sections from songs where id = 'fx-one'`)).sections;
   check('the chart is still a valid chart after an edit',
         Array.isArray(chartAfter) && chartAfter.length === chartBefore.length &&
         chartAfter.every((s) => typeof s.label === 'string' && Array.isArray(s.lines)),
@@ -290,8 +308,8 @@ try {
 
   // Whatever the UI did or did not change, the column round-trips exactly.
   const probeChart = [{ label: 'Probe', bars: '1', lines: [[{ c: 'C#m7', t: 'שלום' }]] }];
-  await rest('songs?id=eq.room-12', { method: 'PATCH', body: JSON.stringify({ sections: probeChart }) });
-  const back = await (await rest('songs?id=eq.room-12&select=sections')).json();
+  await rest('songs?id=eq.fx-two', { method: 'PATCH', body: JSON.stringify({ sections: probeChart }) });
+  const back = await (await rest('songs?id=eq.fx-two&select=sections')).json();
   check('a chart round-trips through jsonb unchanged', sameJson(back[0].sections, probeChart));
   check('unicode and sharps survive the round trip',
         back[0].sections[0].lines[0][0].t === 'שלום' && back[0].sections[0].lines[0][0].c === 'C#m7');
@@ -382,7 +400,7 @@ try {
   await offline.waitForTimeout(2000);
   const offlineBody = await offline.textContent('body');
   check('with the database unreachable the app still renders',
-        offlineBody.includes('Copper Line'), 'fell back to the shipped content');
+        offlineBody.includes('Static Bloom'), 'empty library still paints');
 
   /* The client retries before it gives up, so the notice takes a few seconds
      to arrive — and then it dismisses itself. Watch for it rather than
@@ -403,47 +421,21 @@ try {
   for (const [loc, dir] of [['he', 'rtl'], ['en', 'ltr']]) {
     const p2 = await browser.newPage({ viewport: { width: 1280, height: 900 } });
     await p2.goto(`${BASE}/songs`, { waitUntil: 'networkidle' });
-    await p2.evaluate((l) => localStorage.setItem('static-bloom.v1', JSON.stringify({ locale: l, theme: 'dark' })), loc);
+    await p2.evaluate((l) => localStorage.setItem('static-bloom.v2', JSON.stringify({ locale: l, theme: 'dark' })), loc);
     await p2.reload({ waitUntil: 'networkidle' });
     await p2.waitForTimeout(1600);
     const d = await p2.getAttribute('html', 'dir');
     const t2 = await p2.textContent('body');
     check(`${loc}: direction is ${dir}`, d === dir, d);
-    check(`${loc}: database content renders`, t2.includes('Copper Line'));
+    check(`${loc}: database content renders`, t2.includes('Fixture One'));
     await p2.close();
   }
 
   // ── reset ────────────────────────────────────────────────────────────
-  head('reset demo data');
-  await q(`insert into songs (id,title,artist,key,bpm,sec,own,custom)
-           values ('probe-reset','PROBE Survives Nothing','Probe','A',90,90,true,true)
-           on conflict (id) do nothing`);
+  head('reset');
   await go('/songs');
   const reset = await page.$('button.reset-demo');
-  check('the reset control is present', !!reset);
-  if (reset) {
-    await reset.click();                    // arms
-    await page.waitForTimeout(400);
-    await reset.click();                    // fires
-    await page.waitForTimeout(3500);
-  }
-  const afterReset = await counts();
-  check('reset rebuilds the shipped schedule',
-        afterReset.e === 11 && afterReset.es === 87 && afterReset.s === 14,
-        JSON.stringify(afterReset));
-  check('reset drops songs the band had added',
-        (await q(`select id from songs where id = 'probe-reset'`)).length === 0);
-  /* The demo carries its play dates as labels ('Aug 29'); the database wants
-     real days. When the two disagreed, a reset quietly nulled the whole
-     column and the library's last column went blank for every song. */
-  check('reset keeps the play dates it shipped with',
-        (await q('select id from songs where last_played is not null')).length === 14,
-        `${(await q('select id from songs where last_played is not null')).length} of 14 dated`);
-  await page.evaluate(() => localStorage.clear());
-  await go('/songs');
-  body = await page.textContent('body');
-  check('the reset stuck across a reload',
-        !body.includes('PROBE Survives Nothing') && body.includes('Copper Line'));
+  check('there is no reset-demo control', !reset);
 
   check('nothing failed to persist along the way', writeFailures.length === 0,
         writeFailures.slice(0, 2).join(' | '));
