@@ -164,6 +164,14 @@ export default function LibraryScreen() {
               </div>
               <button
                 className="btn"
+                aria-expanded={creating}
+                onClick={() => { setImporting(false); setCreating(true); }}
+              >
+                <Icon name="plus" size={15} />
+                {t('library.newSong')}
+              </button>
+              <button
+                className="ghost"
                 aria-expanded={importing}
                 onClick={() => { setCreating(false); setImporting(true); }}
               >
@@ -270,9 +278,20 @@ export default function LibraryScreen() {
 
           {rows.length === 0 && !creating && (
             <div className="empty empty-plain">
-              <Icon name="search" size={32} style={{ color: 'var(--fainter)' }} />
+              <Icon name={songs.length === 0 ? 'music' : 'search'} size={32} style={{ color: 'var(--fainter)' }} />
               <p>{songs.length === 0 ? t('library.emptyNone') : t('library.empty')}</p>
-              {songs.length > 0 && (
+              {songs.length === 0 ? (
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
+                  <button className="btn" onClick={() => setCreating(true)}>
+                    <Icon name="plus" size={15} />
+                    {t('library.newSong')}
+                  </button>
+                  <button className="ghost" onClick={() => setImporting(true)}>
+                    <Icon name="globe" size={15} />
+                    {t('import.button')}
+                  </button>
+                </div>
+              ) : (
                 <button
                   className="ghost"
                   onClick={() => {

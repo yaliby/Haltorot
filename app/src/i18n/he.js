@@ -187,6 +187,7 @@ export default {
     searchFailed: 'החיפוש נכשל — בדוק חיבור.',
     noChords: 'לא נמצאו אקורדים לשיר הזה.',
     failed: 'הייבוא נכשל — נסה שוב.',
+    endpointMissing: 'ייבוא האקורדים לא פרוס בשרת הזה. הוסף שיר ידנית, או הרץ את הייבוא מ-npm run dev.',
     add: 'הוסף',
     fetching: 'מושך צ׳ארט…',
     added: '{title} יובא עם אקורדים',

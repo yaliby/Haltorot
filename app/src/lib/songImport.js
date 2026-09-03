@@ -95,6 +95,7 @@ export async function importChart(title, artist) {
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
     log.error('chart import failed', { status: res.status, error: data.error });
+    if (res.status === 404) throw new Error('import endpoint missing');
     throw new Error(data.error || 'import failed');
   }
   done('chart import ok', {

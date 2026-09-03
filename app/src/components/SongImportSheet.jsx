@@ -107,7 +107,13 @@ export function SongImportSheet({ open, songs, onClose, onImport, dispatch, noti
       onClose();
     } catch (e) {
       log.error('import flow failed', { title: hit.title, artist: hit.artist, error: e.message });
-      setError(e.message === 'no chord tabs found' ? t('import.noChords') : t('import.failed'));
+      setError(
+        e.message === 'no chord tabs found'
+          ? t('import.noChords')
+          : e.message === 'import endpoint missing'
+            ? t('import.endpointMissing')
+            : t('import.failed')
+      );
     } finally {
       setImporting(null);
     }

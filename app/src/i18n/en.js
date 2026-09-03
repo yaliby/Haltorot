@@ -187,6 +187,7 @@ export default {
     searchFailed: 'Search failed — check your connection.',
     noChords: 'No chord chart found for this song.',
     failed: 'Import failed — try again.',
+    endpointMissing: 'Chart import is not deployed on this host. Add a song by hand, or run the importer from npm run dev.',
     add: 'Add',
     fetching: 'Fetching chart…',
     added: '{title} imported with chords',

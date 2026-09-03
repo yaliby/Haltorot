@@ -995,6 +995,7 @@ button.att-status:hover { filter: brightness(1.3); }
   margin-inline-start: auto;
   min-width: 0;
   max-width: 100%;
+  flex-wrap: wrap;
 }
 .lib-tools .search { flex: 1; min-width: 0; }
 .lib-tools .search .field { width: 100%; min-width: 0; height: 36px; max-width: 250px; }
