@@ -191,7 +191,7 @@ export default {
     add: 'הוסף',
     fetching: 'מושך צ׳ארט…',
     added: '{title} יובא עם אקורדים',
-    pocNote: 'POC: עובד רק ב-dev/preview (npm run dev). בפרודקשן צריך שרת proxy.'
+    pocNote: 'האקורדים עוברים דרך שרת קטן. ב-dev זה Vite; באתר המפורסם זו פונקציית ה-Edge של הפרויקט.'
   },
   song: {
     notFound: 'השיר הזה לא בספרייה.',

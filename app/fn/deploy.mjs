@@ -25,11 +25,12 @@ function envFile(path) {
 }
 
 const client = envFile(resolve(app, '.env'));
+const prod = envFile(resolve(app, '.env.production'));
 const admin = envFile(resolve(app, '..', '.env.admin'));
 
-const url = client.VITE_SUPABASE_URL || admin.SUPABASE_URL;
+const url = client.VITE_SUPABASE_URL || prod.VITE_SUPABASE_URL || admin.SUPABASE_URL;
 const ref = url?.match(/^https:\/\/([a-z0-9]+)\.supabase\./)?.[1];
-if (!ref) throw new Error('no Supabase project URL in app/.env or .env.admin');
+if (!ref) throw new Error('no Supabase project URL in app/.env, .env.production or .env.admin');
 
 const token = process.env.SUPABASE_ACCESS_TOKEN || admin.SUPABASE_ACCESS_TOKEN;
 if (!token) {

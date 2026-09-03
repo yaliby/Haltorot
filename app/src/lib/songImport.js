@@ -86,12 +86,22 @@ function chartEndpoint() {
   return local;
 }
 
+function chartRequestHeaders() {
+  const env = (typeof import.meta !== 'undefined' && import.meta.env) || {};
+  const key = env.VITE_SUPABASE_PUBLISHABLE_KEY;
+  const url = chartEndpoint();
+  if (key && url.includes('.supabase.co/functions/')) {
+    return { apikey: key, Authorization: `Bearer ${key}` };
+  }
+  return {};
+}
+
 export async function importChart(title, artist) {
   const url = `${chartEndpoint()}?${new URLSearchParams({ title, artist: artist || '' })}`;
   log.info('chart import request', { title, artist: artist || '(none)', url });
   const done = log.time('chart');
 
-  const res = await fetch(url);
+  const res = await fetch(url, { headers: chartRequestHeaders() });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
     log.error('chart import failed', { status: res.status, error: data.error });

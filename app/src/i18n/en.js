@@ -191,7 +191,7 @@ export default {
     add: 'Add',
     fetching: 'Fetching chart…',
     added: '{title} imported with chords',
-    pocNote: 'POC: only works in dev/preview (npm run dev). Production needs a proxy server.'
+    pocNote: 'Chords come through a small server hop. In dev that is Vite; on the published site it is the project’s Edge Function.'
   },
   song: {
     notFound: "That song isn't in the library.",
