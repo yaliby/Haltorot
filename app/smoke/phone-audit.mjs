@@ -41,17 +41,16 @@ console.log('toggles visible', await toggles.isVisible());
 const box = await toggles.boundingBox();
 console.log('toggles box', box);
 
-const newSongBtn = page.locator('text=שיר חדש');
+const importBtn = page.locator('button', { hasText: 'ייבוא מהרשת' });
 await page.locator('.tab', { hasText: 'שירים' }).click();
 await page.waitForTimeout(350);
 await shot('02-songs-he');
 
-const songBtn = page.locator('button', { hasText: 'שיר חדש' });
-if (await songBtn.count()) {
-  const b = await songBtn.boundingBox();
-  console.log('new song btn box', b);
+if (await importBtn.count()) {
+  const b = await importBtn.boundingBox();
+  console.log('import btn box', b);
   const clipped = b && (b.x + b.width > 390 || b.x < 0 || b.y < 0);
-  console.log('new song clipped?', clipped, 'right', b ? b.x + b.width : null);
+  console.log('import clipped?', clipped, 'right', b ? b.x + b.width : null);
 }
 
 await page.locator('.tab', { hasText: 'לוח שנה' }).click();

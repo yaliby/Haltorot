@@ -5,26 +5,14 @@ import { SongImportSheet } from '../components/SongImportSheet.jsx';
 import { SongArt } from '../components/SongArt.jsx';
 import { useStore } from '../store.jsx';
 import { useI18n } from '../i18n/index.js';
-import { BAND } from '../data.js';
 import { hue, keyHue } from '../lib/hues.js';
 import { songKey } from '../lib/chords.js';
 import { mmss, runtime } from '../lib/dates.js';
-import { songSlug, sameSongEntry } from '../lib/text.js';
 import { isDeletableSong } from '../lib/songs.js';
 import { freezeUndo } from '../lib/undo.js';
 import { createLogger } from '../lib/logger.js';
 
 const log = createLogger('library');
-
-const KEYS = ['C', 'G', 'D', 'A', 'E', 'F', 'Bb', 'Am', 'Em', 'Bm', 'F#m', 'Dm', 'Gm', 'Cm'];
-const BLANK = { title: '', artist: BAND.name, key: 'C', bpm: '100', length: '3:30', own: true };
-
-function parseLength(v) {
-  const m = /^(\d{1,2}):([0-5]?\d)$/.exec(v.trim());
-  if (m) return Number(m[1]) * 60 + Number(m[2]);
-  const n = Number(v.trim());
-  return Number.isFinite(n) && n > 0 ? Math.round(n) : null;
-}
 
 const GROUP_IDS = ['all', 'originals', 'covers', 'charts', 'work'];
 
@@ -35,9 +23,7 @@ export default function LibraryScreen() {
   const [query, setQuery] = useState('');
   const [group, setGroup] = useState('all');
   const [key, setKey] = useState('all');
-  const [creating, setCreating] = useState(false);
   const [importing, setImporting] = useState(false);
-  const [draft, setDraft] = useState(BLANK);
 
   const GROUPS = useMemo(() => {
     const tests = {
@@ -55,44 +41,6 @@ export default function LibraryScreen() {
   }, [t]);
 
   const allKeyLabel = t('common.all');
-
-  const titleTaken = songs.some((s) => sameSongEntry(s, { title: draft.title, artist: draft.artist }));
-  const seconds = parseLength(draft.length);
-  const bpm = Number(draft.bpm);
-  const problem = !draft.title.trim()
-    ? t('library.errTitle')
-    : titleTaken
-    ? t('library.errDuplicate')
-    : !seconds
-    ? t('library.errLength')
-    : !(bpm >= 20 && bpm <= 320)
-    ? t('library.errBpm')
-    : null;
-
-  function createSong() {
-    if (problem) return;
-    const song = {
-      id: songSlug(draft.title, new Set(songs.map((s) => s.id))),
-      title: draft.title.trim(),
-      artist: draft.artist.trim() || BAND.name,
-      key: draft.key,
-      bpm: Math.round(bpm),
-      sec: seconds,
-      capo: 0,
-      timeSig: '4/4',
-      own: draft.own,
-      sections: [],
-      needsWork: true,
-      lastPlayed: t('common.never')
-    };
-    dispatch({ type: 'add-to-library', song });
-    setCreating(false);
-    setDraft(BLANK);
-    setQuery('');
-    setGroup('all');
-    setKey('all');
-    notify(t('library.added', { title: song.title }), { songs });
-  }
 
   function removeSong(song) {
     log.info('delete requested', { id: song.id, title: song.title, deletable: isDeletableSong(song) });
@@ -164,18 +112,10 @@ export default function LibraryScreen() {
               </div>
               <button
                 className="btn"
-                aria-expanded={creating}
-                onClick={() => { setImporting(false); setCreating(true); }}
+                aria-expanded={importing}
+                onClick={() => setImporting(true)}
               >
                 <Icon name="plus" size={15} />
-                {t('library.newSong')}
-              </button>
-              <button
-                className="ghost"
-                aria-expanded={importing}
-                onClick={() => { setCreating(false); setImporting(true); }}
-              >
-                <Icon name="globe" size={15} />
                 {t('import.button')}
               </button>
             </div>
@@ -276,21 +216,15 @@ export default function LibraryScreen() {
             </div>
           ))}
 
-          {rows.length === 0 && !creating && (
+          {rows.length === 0 && (
             <div className="empty empty-plain">
               <Icon name={songs.length === 0 ? 'music' : 'search'} size={32} style={{ color: 'var(--fainter)' }} />
               <p>{songs.length === 0 ? t('library.emptyNone') : t('library.empty')}</p>
               {songs.length === 0 ? (
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
-                  <button className="btn" onClick={() => setCreating(true)}>
-                    <Icon name="plus" size={15} />
-                    {t('library.newSong')}
-                  </button>
-                  <button className="ghost" onClick={() => setImporting(true)}>
-                    <Icon name="globe" size={15} />
-                    {t('import.button')}
-                  </button>
-                </div>
+                <button className="btn" onClick={() => setImporting(true)}>
+                  <Icon name="plus" size={15} />
+                  {t('import.button')}
+                </button>
               ) : (
                 <button
                   className="ghost"
@@ -308,8 +242,6 @@ export default function LibraryScreen() {
         </div>
       </main>
 
-      {creating && <div className="sheet-scrim" onClick={() => setCreating(false)} />}
-
       <SongImportSheet
         open={importing}
         songs={songs}
@@ -319,99 +251,6 @@ export default function LibraryScreen() {
         notify={notify}
         locale={locale}
       />
-
-      {creating && (
-        <aside className="aside is-sheet slidein" style={{ width: 300, flex: '0 0 300px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div className="eyebrow">{t('library.newSongTitle')}</div>
-            <button className="icon-btn" aria-label={t('common.cancel')} onClick={() => setCreating(false)}>
-              <Icon name="close" size={14} />
-            </button>
-          </div>
-
-          <label style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-            <span className="eyebrow">{t('common.title')}</span>
-            <input
-              className="field"
-              autoFocus
-              value={draft.title}
-              placeholder={t('library.titlePlaceholder')}
-              onChange={(e) => setDraft((d) => ({ ...d, title: e.target.value }))}
-              onKeyDown={(e) => e.key === 'Enter' && createSong()}
-            />
-          </label>
-
-          <label style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-            <span className="eyebrow">{t('library.artist')}</span>
-            <input
-              className="field"
-              value={draft.artist}
-              onChange={(e) => setDraft((d) => ({ ...d, artist: e.target.value, own: e.target.value.trim() === BAND.name }))}
-            />
-          </label>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-            <span className="eyebrow">{t('common.key')}</span>
-            <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
-              {KEYS.map((k) => (
-                <button
-                  key={k}
-                  className={'chip mono' + (draft.key === k ? ' is-on' : '')}
-                  aria-pressed={draft.key === k}
-                  onClick={() => setDraft((d) => ({ ...d, key: k }))}
-                >
-                  {k}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', gap: 10 }}>
-            <label style={{ display: 'flex', flexDirection: 'column', gap: 7, flex: 1 }}>
-              <span className="eyebrow">{t('common.tempo')}</span>
-              <input
-                className="field mono"
-                type="number"
-                min="20"
-                max="320"
-                value={draft.bpm}
-                onChange={(e) => setDraft((d) => ({ ...d, bpm: e.target.value }))}
-              />
-            </label>
-            <label style={{ display: 'flex', flexDirection: 'column', gap: 7, flex: 1 }}>
-              <span className="eyebrow">{t('library.length')}</span>
-              <input
-                className="field mono"
-                value={draft.length}
-                placeholder="3:30"
-                onChange={(e) => setDraft((d) => ({ ...d, length: e.target.value }))}
-                onKeyDown={(e) => e.key === 'Enter' && createSong()}
-              />
-            </label>
-          </div>
-
-          <div style={{ display: 'flex', gap: 6 }}>
-            {[[true, t('common.original')], [false, t('common.cover')]].map(([v, label]) => (
-              <button
-                key={label}
-                className={'chip' + (draft.own === v ? ' is-on' : '')}
-                style={{ flex: 1 }}
-                aria-pressed={draft.own === v}
-                onClick={() => setDraft((d) => ({ ...d, own: v }))}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-
-          <button className="btn btn-lg btn-block" disabled={!!problem} onClick={createSong}>
-            {t('library.addToLibrary')}
-          </button>
-          <p style={{ margin: '-8px 0 0', fontSize: 11, color: problem ? 'var(--warn)' : 'var(--fainter)', textAlign: 'center', lineHeight: 1.5 }}>
-            {problem || t('library.hintOk')}
-          </p>
-        </aside>
-      )}
     </>
   );
 }
