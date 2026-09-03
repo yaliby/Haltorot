@@ -40,10 +40,10 @@ jobs:
 
       - name: Build
         env:
-          # The site lives under https://<user>.github.io/Halturaz/. The
+          # The site lives under https://<user>.github.io/Haltorot/. The
           # Supabase settings come from app/.env.production, in the repo, so
           # this build needs nothing configured anywhere.
-          BASE_PATH: /Halturaz/
+          BASE_PATH: /Haltorot/
         run: npm run build
 
       - uses: actions/upload-pages-artifact@v3

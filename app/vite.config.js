@@ -4,7 +4,7 @@ import react from '@vitejs/plugin-react';
 import { apiPlugin } from './vite.plugin.api.js';
 
 /* GitHub Pages serves a project site from a sub-path
-   (https://<user>.github.io/Halturaz/), so the build needs to know that
+   (https://<user>.github.io/Haltorot/), so the build needs to know that
    prefix. The deploy workflow passes it in; a plain local build stays at '/'
    so `npm run preview` keeps working the way it always has. */
 const base = process.env.BASE_PATH || '/';

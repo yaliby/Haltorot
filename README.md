@@ -30,7 +30,7 @@ the publishable key ships in the browser bundle, the secret key never does.
 ## Deploy
 
 Every push to `yaliby` builds `app/` and publishes it to GitHub Pages —
-https://yardennitsan.github.io/Halturaz/ — via `.github/workflows/pages.yml`.
+https://yaliby.github.io/Haltorot/ — via `.github/workflows/pages.yml`.
 One switch turns it on, once: **Settings → Pages → Source: GitHub Actions.**
 
 Nothing else is configured. The build's Supabase settings sit in
@@ -39,9 +39,9 @@ visitor downloads either way — see that file's header for the line between
 those and the credentials in `.env.admin`.
 
 The site is served from a sub-path, so the workflow builds with
-`BASE_PATH=/Halturaz/` and the router reads that prefix off `BASE_URL`. A plain
+`BASE_PATH=/Haltorot/` and the router reads that prefix off `BASE_URL`. A plain
 local `npm run build` stays at `/`. Pages has no server for a deep link like
-`/Halturaz/songs`, so the build leaves a copy of `index.html` as `404.html` and
+`/Haltorot/songs`, so the build leaves a copy of `index.html` as `404.html` and
 the router picks the route up from there.
 
 ### Or Vercel, which runs the code too
