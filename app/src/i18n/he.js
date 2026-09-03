@@ -191,6 +191,7 @@ export default {
     add: 'הוסף',
     fetching: 'מושך צ׳ארט…',
     added: '{title} יובא עם אקורדים',
+    addedNoChords: '{title} נוסף בלי אקורדים',
     pocNote: 'האקורדים עוברים דרך שרת קטן. ב-dev זה Vite; באתר המפורסם זו פונקציית ה-Edge של הפרויקט.'
   },
   song: {

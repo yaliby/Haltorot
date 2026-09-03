@@ -1,5 +1,5 @@
 import { alignByColumns } from '../src/lib/chordAlign.js';
-import { decodeEntities, hasHebrew, normText, textMatch, titleMatch } from '../src/lib/text.js';
+import { decodeEntities, hasHebrew, searchTitle, textMatch, titleMatch } from '../src/lib/text.js';
 import { createLogger } from '../src/lib/logger.js';
 
 const log = createLogger('tab4u');
@@ -157,7 +157,7 @@ function parseSearchRow(html) {
 }
 
 export async function searchTab4u(title, artist = '') {
-  const q = [title, artist].filter(Boolean).join(' ').trim();
+  const q = [searchTitle(title), artist].filter(Boolean).join(' ').trim();
   log.debug('search', { q, title, artist: artist || '(none)' });
   const html = await fetchText(`${BASE}/resultsSimple?tab=songs&q=${encodeURIComponent(q)}`);
   const hits = [];

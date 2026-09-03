@@ -191,6 +191,7 @@ export default {
     add: 'Add',
     fetching: 'Fetching chart…',
     added: '{title} imported with chords',
+    addedNoChords: '{title} added without chords',
     pocNote: 'Chords come through a small server hop. In dev that is Vite; on the published site it is the project’s Edge Function.'
   },
   song: {

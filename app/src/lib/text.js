@@ -64,6 +64,16 @@ export function normTitle(s) {
   return normText(s).replace(TITLE_SUFFIX, '').trim();
 }
 
+/** Title to send to a chord-site search.
+ *  iTunes often appends " (Single Version)" / " (feat. …)"; UG and Tab4U
+ *  index the song without that suffix, so searching the raw iTunes title
+ *  returns nothing even when a chart exists. */
+export function searchTitle(s) {
+  const raw = String(s || '').trim();
+  const cut = raw.replace(TITLE_SUFFIX, '').trim();
+  return cut || raw;
+}
+
 /** Stricter than textMatch — avoids "יש לי מלאך" matching "מלאך". */
 export function titleMatch(want, got) {
   const a = normTitle(want);

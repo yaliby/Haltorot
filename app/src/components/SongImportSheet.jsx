@@ -77,23 +77,33 @@ export function SongImportSheet({ open, songs, onClose, onImport, dispatch, noti
     setImporting(`${hit.title}::${hit.artist}`);
     setError('');
     try {
-      const chart = await importChart(hit.title, hit.artist);
+      let chart = null;
+      try {
+        chart = await importChart(hit.title, hit.artist);
+      } catch (e) {
+        /* A missing chart is not a failed add — iTunes already named the
+           song. Jordan Davis's Let It Go has no UG/Tab4U tab; Demi's
+           Frozen cut does, once the search drops "(Single Version)". */
+        if (e.message !== 'no chord tabs found') throw e;
+        log.warn('adding without chart', { title: hit.title, artist: hit.artist });
+      }
+      const sections = Array.isArray(chart?.sections) ? chart.sections : [];
       const song = {
         id: songSlug(hit.title, new Set(songs.map((s) => s.id))),
         title: hit.title.trim(),
         artist: hit.artist.trim(),
-        key: chart.key || '?',
-        bpm: chart.bpm || 100,
+        key: chart?.key || '?',
+        bpm: chart?.bpm || 100,
         sec: hit.sec,
         artwork: artworkAt(hit.artwork, 200),
-        capo: chart.capo || 0,
+        capo: chart?.capo || 0,
         timeSig: '4/4',
         own: false,
-        sections: chart.sections,
-        needsWork: false,
+        sections,
+        needsWork: !sections.length,
         lastPlayed: t('common.never'),
-        importSource: chart.source,
-        importUrl: chart.sourceUrl
+        importSource: chart?.source,
+        importUrl: chart?.sourceUrl
       };
       log.info('adding to library', {
         id: song.id,
@@ -103,16 +113,15 @@ export function SongImportSheet({ open, songs, onClose, onImport, dispatch, noti
         sections: song.sections.length
       });
       onImport(song);
-      notify(t('import.added', { title: song.title }), { songs });
+      notify(
+        sections.length ? t('import.added', { title: song.title }) : t('import.addedNoChords', { title: song.title }),
+        { songs }
+      );
       onClose();
     } catch (e) {
       log.error('import flow failed', { title: hit.title, artist: hit.artist, error: e.message });
       setError(
-        e.message === 'no chord tabs found'
-          ? t('import.noChords')
-          : e.message === 'import endpoint missing'
-            ? t('import.endpointMissing')
-            : t('import.failed')
+        e.message === 'import endpoint missing' ? t('import.endpointMissing') : t('import.failed')
       );
     } finally {
       setImporting(null);

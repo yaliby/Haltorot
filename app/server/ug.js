@@ -1,6 +1,6 @@
 import { parseChordPro } from '../src/lib/chordpro.js';
 import { transpose } from '../src/lib/chords.js';
-import { textMatch } from '../src/lib/text.js';
+import { searchTitle, textMatch } from '../src/lib/text.js';
 import { createLogger } from '../src/lib/logger.js';
 
 const log = createLogger('ug');
@@ -65,9 +65,10 @@ function parseSearchResults(html) {
 }
 
 export async function searchChordTabs(title, artist = '') {
-  log.debug('search', { title, artist: artist || '(none)' });
+  const q = searchTitle(title);
+  log.debug('search', { title, query: q, artist: artist || '(none)' });
   const html = await fetchText(
-    `https://www.ultimate-guitar.com/search.php?search_type=title&value=${encodeURIComponent(title.trim())}`
+    `https://www.ultimate-guitar.com/search.php?search_type=title&value=${encodeURIComponent(q)}`
   );
 
   const parsed = parseSearchResults(html);

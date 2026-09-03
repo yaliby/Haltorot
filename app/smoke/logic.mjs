@@ -221,7 +221,7 @@ eq('knockin chord count', knockParsed.length, 3);
 eq('knockin Am lands on ground', knockParsed[2].c, 'Am');
 eq('knockin Am text', knockParsed[2].t?.trim(), 'ground');
 
-const { songSlug, hasHebrew, textMatch, titleMatch } = await import('../src/lib/text.js');
+const { songSlug, hasHebrew, textMatch, titleMatch, searchTitle } = await import('../src/lib/text.js');
 eq('hebrew slug', songSlug('מחר', new Set()), 'מחר');
 eq('hasHebrew', hasHebrew('אביב גפן'), true);
 eq('hebrew title match', textMatch('מחר', 'מחר (live)'), true);
@@ -229,6 +229,9 @@ eq('title match live suffix', titleMatch('מחר', 'מחר (live)'), true);
 eq('title rejects partial', titleMatch('יש לי מלאך', 'מלאך'), false);
 eq('mashina title', titleMatch('הכוכבים דולקים על אש קטנה', 'הכוכבים דולקים על אש קטנה'), true);
 eq('mashina alias', textMatch('Mashina', 'משינה'), true);
+eq('search title strips single version', searchTitle('Let It Go (Single Version)'), 'Let It Go');
+eq('search title strips featuring', searchTitle("Let It Go (feat. Missy Elliott & Lil 'Kim)"), 'Let It Go');
+eq('search title keeps a bare title', searchTitle('Let It Go'), 'Let It Go');
 
 const { parseTab4uHtml } = await import('../server/tab4u.js');
 
