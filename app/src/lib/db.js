@@ -55,6 +55,7 @@ function rowToSong(r) {
     sections: Array.isArray(r.sections) ? r.sections : [],
     ...(r.artwork ? { artwork: r.artwork } : {}),
     ...(r.needs_work ? { needsWork: true } : {}),
+    ...(r.bunker ? { bunker: true } : {}),
     ...(r.custom ? { custom: true } : {}),
     ...(r.note ? { note: r.note } : {}),
     ...(r.note_by ? { noteBy: r.note_by } : {}),
@@ -77,6 +78,7 @@ function songToRow(s) {
     time_sig: s.timeSig ?? '4/4',
     own: !!s.own,
     needs_work: !!s.needsWork,
+    bunker: !!s.bunker,
     custom: !!s.custom,
     sections: s.sections ?? [],
     artwork: s.artwork ?? null,
@@ -174,6 +176,8 @@ const writers = {
     ok(await supabase.from('events').insert({
       date: a.date, kind: ev.kind, time: ev.time, end_time: ev.end || '', place: ev.place
     }));
+    // A rehearsal is born with the bunker already on it.
+    if (ev.songs.length) await writeSetlist(a.date, ev);
   },
   'delete-rehearsal': async (a) => {
     ok(await supabase.from('events').delete().eq('date', a.date));
@@ -209,6 +213,11 @@ const writers = {
   },
   'remove-from-library': async (a) => {
     ok(await supabase.from('songs').delete().eq('id', a.songId));
+  },
+  'set-bunker': async (a, s) => {
+    const song = s.songs.find((x) => x.id === a.songId);
+    if (!song) return;
+    ok(await supabase.from('songs').update({ bunker: !!song.bunker }).eq('id', a.songId));
   },
   'edit-chart': async (a) => {
     ok(await supabase.from('songs').update({ sections: a.sections }).eq('id', a.songId));

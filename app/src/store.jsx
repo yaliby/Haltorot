@@ -37,6 +37,9 @@ const isNewRoom = (name, rooms) => {
   return !allRooms(rooms).some((r) => r.toLowerCase() === v.toLowerCase());
 };
 
+/** The ids of the standing set, in library order. */
+const bunkerSongs = (songs) => songs.filter((s) => s.bunker).map((s) => s.id);
+
 /** Enough of a chart to draw without printing `undefined` over a lyric. */
 const isSections = (v) =>
   Array.isArray(v) &&
@@ -116,11 +119,16 @@ export function reducer(state, action) {
     case 'create-rehearsal': {
       const { date, time, end, place, kind } = action;
       if (!date || state.events[date]) return state;
+      /* The bunker is the band's standing set — the songs they run every time.
+         A new rehearsal opens with them already on the list, and whatever they
+         don't feel like tonight comes off it. A show starts empty: its set is
+         built for the room, not out of habit. */
+      const songs = kind === 's' ? [] : bunkerSongs(state.songs);
       return {
         ...state,
         events: {
           ...state.events,
-          [date]: { kind: kind || 'r', time, end: end || '', place, songs: [], done: [] }
+          [date]: { kind: kind || 'r', time, end: end || '', place, songs, done: [] }
         }
       };
     }
@@ -232,6 +240,22 @@ export function reducer(state, action) {
           : ev;
       }
       return { ...state, songs: state.songs.filter((s) => s.id !== action.songId), events };
+    }
+
+    /** In or out of the standing set. */
+    case 'set-bunker': {
+      const song = state.songs.find((s) => s.id === action.songId);
+      if (!song) {
+        log.warn('set-bunker rejected: unknown song', { songId: action.songId });
+        return state;
+      }
+      const on = !!action.on;
+      if (!!song.bunker === on) return state;
+      log.info('set-bunker', { id: song.id, title: song.title, on });
+      return {
+        ...state,
+        songs: state.songs.map((s) => (s.id === action.songId ? { ...s, bunker: on } : s))
+      };
     }
 
     /* Only the chord anchors move — the words, the sections and the bar counts

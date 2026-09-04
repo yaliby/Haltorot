@@ -147,6 +147,9 @@ export default {
   library: {
     collections: 'אוספים',
     allSongs: 'כל השירים',
+    bunker: 'בנקר',
+    bunkerIn: 'הוסף את {title} לבנקר',
+    bunkerOut: 'הוצא את {title} מהבנקר',
     originals: 'מקוריים',
     covers: 'קאברים',
     hasChords: 'עם אקורדים',

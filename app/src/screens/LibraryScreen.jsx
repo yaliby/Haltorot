@@ -14,7 +14,9 @@ import { createLogger } from '../lib/logger.js';
 
 const log = createLogger('library');
 
-const GROUP_IDS = ['all', 'originals', 'covers', 'charts', 'work'];
+const GROUP_IDS = ['all', 'bunker', 'originals', 'covers', 'charts', 'work'];
+/* Where a collection's name isn't its id. */
+const GROUP_LABEL = { all: 'allSongs', charts: 'hasChords', work: 'needsWork' };
 
 export default function LibraryScreen() {
   const { songs, events, dispatch, notify, locale } = useStore();
@@ -28,6 +30,7 @@ export default function LibraryScreen() {
   const GROUPS = useMemo(() => {
     const tests = {
       all: () => true,
+      bunker: (s) => !!s.bunker,
       originals: (s) => s.own,
       covers: (s) => !s.own,
       charts: (s) => s.sections.length > 0,
@@ -35,7 +38,7 @@ export default function LibraryScreen() {
     };
     return GROUP_IDS.map((id) => ({
       id,
-      label: t(`library.${id === 'all' ? 'allSongs' : id === 'charts' ? 'hasChords' : id === 'work' ? 'needsWork' : id}`),
+      label: t(`library.${GROUP_LABEL[id] || id}`),
       test: tests[id]
     }));
   }, [t]);
@@ -155,6 +158,7 @@ export default function LibraryScreen() {
           <span>{t('common.tempo')}</span>
           <span className="right">{t('common.time')}</span>
           <span>{t('library.lastPlayed')}</span>
+          <span className="center">{t('library.bunker')}</span>
           <span />
         </div>
 
@@ -199,6 +203,21 @@ export default function LibraryScreen() {
                 <span className="lib-time set-dur">{mmss(s.sec)}</span>
                 <span className="lib-last" style={{ fontSize: 12, color: 'var(--faint)' }}>{s.lastPlayed || t('common.never')}</span>
               </button>
+
+              {/* Outside the row button on purpose: this cell changes what the
+                  next rehearsal opens with, it doesn't open the song. */}
+              <div className="lib-bunker">
+                <button
+                  type="button"
+                  className={'icon-btn bunker-toggle' + (s.bunker ? ' is-on' : '')}
+                  aria-pressed={!!s.bunker}
+                  aria-label={t(s.bunker ? 'library.bunkerOut' : 'library.bunkerIn', { title: s.title })}
+                  title={t(s.bunker ? 'library.bunkerOut' : 'library.bunkerIn', { title: s.title })}
+                  onClick={() => dispatch({ type: 'set-bunker', songId: s.id, on: !s.bunker })}
+                >
+                  <Icon name="star" size={14} />
+                </button>
+              </div>
 
               <div className="lib-actions">
                 {isDeletableSong(s) && (

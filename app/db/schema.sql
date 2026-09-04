@@ -34,6 +34,8 @@ create table if not exists songs (
   own           boolean not null default false,
   needs_work    boolean not null default false,
   custom        boolean not null default false,
+  -- The standing set: every new rehearsal opens with these songs already on it.
+  bunker        boolean not null default false,
   -- The chart itself: [{ label, bars, accent, lines: [[{ c, t }]] }]
   -- stored whole, exactly the shape the renderer already expects.
   sections      jsonb not null default '[]'::jsonb,
@@ -52,6 +54,7 @@ create table if not exists songs (
 -- `create table if not exists` above does nothing to a table that already
 -- exists, so columns added after the first deploy need saying out loud.
 alter table songs add column if not exists artwork text;
+alter table songs add column if not exists bunker boolean not null default false;
 
 create table if not exists events (
   date       date primary key,             -- one booking per day, as the app assumes
@@ -113,21 +116,22 @@ begin
   delete from events where date is not null;   -- cascades to setlists and attendance
 
   insert into songs (id, title, artist, key, bpm, sec, capo, time_sig, own,
-                     needs_work, custom, sections, artwork, note, note_by, note_at,
+                     needs_work, custom, bunker, sections, artwork, note, note_by, note_at,
                      last_played, import_source)
   select id, title, artist, key, bpm, sec, capo, time_sig, own,
-         needs_work, custom, sections, artwork, note, note_by, note_at,
+         needs_work, custom, coalesce(bunker, false), sections, artwork, note, note_by, note_at,
          last_played, import_source
     from jsonb_to_recordset(payload -> 'songs') as x (
       id text, title text, artist text, key text, bpm integer, sec integer,
       capo integer, time_sig text, own boolean, needs_work boolean,
-      custom boolean, sections jsonb, artwork text, note text, note_by text,
+      custom boolean, bunker boolean, sections jsonb, artwork text, note text, note_by text,
       note_at timestamptz, last_played date, import_source text)
   on conflict (id) do update set
     title = excluded.title, artist = excluded.artist, key = excluded.key,
     bpm = excluded.bpm, sec = excluded.sec, capo = excluded.capo,
     time_sig = excluded.time_sig, own = excluded.own,
     needs_work = excluded.needs_work, custom = excluded.custom,
+    bunker = excluded.bunker,
     sections = excluded.sections, artwork = excluded.artwork,
     note = excluded.note,
     note_by = excluded.note_by, note_at = excluded.note_at,

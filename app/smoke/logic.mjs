@@ -85,6 +85,26 @@ eq('add-song appends once',
    order(reducer(reducer(base, { type: 'add-song', date: 'd', songId: 'e' }), { type: 'add-song', date: 'd', songId: 'e' })), 'abcde');
 eq('create-rehearsal will not clobber an existing day',
    reducer(base, { type: 'create-rehearsal', date: 'd', time: '09:00', place: 'Y' }).events.d.time, '19:00');
+
+// --- the bunker: the standing set a new rehearsal opens with
+const banked = { ...base, songs: [
+  { id: 'a', title: 'A', artist: '', key: 'C', bpm: 100, sec: 200, sections: [], bunker: true },
+  { id: 'b', title: 'B', artist: '', key: 'C', bpm: 100, sec: 200, sections: [] },
+  { id: 'c', title: 'C', artist: '', key: 'C', bpm: 100, sec: 200, sections: [], bunker: true }
+] };
+eq('a new rehearsal opens with the bunker on it',
+   reducer(banked, { type: 'create-rehearsal', date: 'e', time: '20:00', place: 'X', kind: 'r' }).events.e.songs,
+   ['a', 'c']);
+eq('a show starts empty',
+   reducer(banked, { type: 'create-rehearsal', date: 'e', time: '21:00', place: 'X', kind: 's' }).events.e.songs, []);
+const outOfBunker = reducer(banked, { type: 'set-bunker', songId: 'a', on: false });
+eq('set-bunker takes a song out', outOfBunker.songs.map((s) => !!s.bunker), [false, false, true]);
+eq('set-bunker puts one in',
+   reducer(banked, { type: 'set-bunker', songId: 'b', on: true }).songs.map((s) => !!s.bunker), [true, true, true]);
+eq('set-bunker ignores an unknown song',
+   reducer(banked, { type: 'set-bunker', songId: 'zzz', on: true }), banked);
+eq('a rehearsal booked after that leaves the song behind',
+   reducer(outOfBunker, { type: 'create-rehearsal', date: 'e', time: '20:00', place: 'X', kind: 'r' }).events.e.songs, ['c']);
 eq('original state is untouched', order(base), 'abcd');
 
 // --- editing and deleting a booking

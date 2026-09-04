@@ -147,6 +147,9 @@ export default {
   library: {
     collections: 'Collections',
     allSongs: 'All songs',
+    bunker: 'Bunker',
+    bunkerIn: 'Add {title} to the bunker',
+    bunkerOut: 'Take {title} out of the bunker',
     originals: 'Originals',
     covers: 'Covers',
     hasChords: 'Has chords',
