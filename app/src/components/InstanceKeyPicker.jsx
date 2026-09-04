@@ -2,17 +2,10 @@ import React from 'react';
 import { Icon } from './Icon.jsx';
 import { useI18n } from '../i18n/index.js';
 import { hue } from '../lib/hues.js';
-import { clampSteps, instanceKey, songKey, transpose } from '../lib/chords.js';
+import { clampSteps, instanceKey, songKey } from '../lib/chords.js';
 
 /* Dedicated to the add-to-bunker / add-to-set path. The library song itself
    is never rewritten — only the instance that is about to be created. */
-const INTERVALS = [
-  { steps: -2, label: 'toneDown' },
-  { steps: -1, label: 'halfDown' },
-  { steps: 1, label: 'halfUp' },
-  { steps: 2, label: 'toneUp' }
-];
-
 export function InstanceKeyPicker({ song, steps, onSteps, onConfirm, onCancel, confirmLabel }) {
   const { t } = useI18n();
   const original = songKey(song);
@@ -36,7 +29,7 @@ export function InstanceKeyPicker({ song, steps, onSteps, onConfirm, onCancel, c
         <div className="eyebrow">{t('instanceKey.title')}</div>
         <div className="instance-key-song">
           <div className="mini-title truncate">{song.title}</div>
-          <div className="mini-sub">{song.artist} · {original}</div>
+          <div className="mini-sub">{song.artist}</div>
         </div>
       </div>
 
@@ -54,7 +47,7 @@ export function InstanceKeyPicker({ song, steps, onSteps, onConfirm, onCancel, c
       </button>
 
       <div>
-        <div className="eyebrow">{t('instanceKey.transpose')}</div>
+        <div className="eyebrow">{t('instanceKey.played')}</div>
         <div className="seg seg-key instance-key-seg">
           <button
             type="button"
@@ -65,7 +58,7 @@ export function InstanceKeyPicker({ song, steps, onSteps, onConfirm, onCancel, c
             <Icon name="minus" size={14} />
           </button>
           <span className="seg-label" aria-live="polite">
-            <small>{shifted ? `KEY ${n > 0 ? `+${n}` : n}` : t('instanceKey.keyLabel')}</small>
+            <small>{t('instanceKey.keyLabel')}</small>
             <strong className={shifted ? 'is-set' : ''} style={hue(display)}>{display || '—'}</strong>
           </span>
           <button
@@ -76,20 +69,6 @@ export function InstanceKeyPicker({ song, steps, onSteps, onConfirm, onCancel, c
           >
             <Icon name="plus" size={14} />
           </button>
-        </div>
-        <div className="instance-key-intervals">
-          {INTERVALS.map((opt) => (
-            <button
-              key={opt.steps}
-              type="button"
-              className={'chip' + (n === opt.steps ? ' is-on' : '')}
-              aria-pressed={n === opt.steps}
-              onClick={() => onSteps(opt.steps)}
-            >
-              {t(`instanceKey.${opt.label}`)}
-              <span className="instance-key-interval-key">{transpose(original, opt.steps) || '—'}</span>
-            </button>
-          ))}
         </div>
         <p className="instance-key-hint">
           {shifted
@@ -121,10 +100,9 @@ export function InstanceKeyBadge({ song, steps, title }) {
     <span
       className="instance-key-tag"
       style={hue(to)}
-      title={title || t('instanceKey.badgeTitle', { from, to, n: n > 0 ? `+${n}` : String(n) })}
+      title={title || t('instanceKey.badgeTitle', { from, to })}
     >
-      <span className="instance-key-tag-key">{to}</span>
-      <span className="instance-key-tag-shift">{n > 0 ? `+${n}` : n}</span>
+      {to}
     </span>
   );
 }
