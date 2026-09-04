@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useRef, useEffect, useLayoutEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Icon } from '../components/Icon.jsx';
+import { SongArt } from '../components/SongArt.jsx';
 import { LanguageToggle } from '../components/LanguageToggle.jsx';
 import { ThemeToggle } from '../components/ThemeToggle.jsx';
 import { useStore, useRooms } from '../store.jsx';
@@ -852,6 +853,9 @@ export default function CalendarScreen() {
                   {setSongs.slice(0, 4).map((s, i) => (
                     <button key={s.id} className="mini-row" onClick={() => navigate(`/song/${s.id}?from=${selected}`)}>
                       <span className="mini-num">{i + 1}</span>
+                      {/* The cover, or the blank tile — the key already has
+                          its badge at the end of the row. */}
+                      <SongArt song={s} fallback="note" />
                       <span className="grow">
                         <span className="mini-title truncate" style={{ display: 'block' }}>{s.title}</span>
                         <span className="mini-sub">{s.artist}</span>

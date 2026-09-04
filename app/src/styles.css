@@ -616,12 +616,16 @@ html[dir="ltr"] .cal-head-title {
 .wave i.lit { background: var(--accent); }
 
 .mini-row {
-  display: flex; align-items: center; gap: 11px;
+  display: flex; align-items: center; gap: 10px;
   padding: 8px; margin: 0 -8px; border-radius: 8px;
-  transition: background 0.13s ease; text-align: left; width: calc(100% + 16px);
+  /* Start, not left: in Hebrew the row reads from the right, so the title
+     stays beside its number instead of drifting to the far side. */
+  transition: background 0.13s ease; text-align: start; width: calc(100% + 16px);
 }
 .mini-row:hover { background: var(--raised-2); }
-.mini-num { font-family: var(--mono); font-size: 11px; color: var(--fainter); width: 14px; text-align: right; flex: 0 0 auto; }
+.mini-num { font-family: var(--mono); font-size: 11px; color: var(--fainter); width: 14px; text-align: end; flex: 0 0 auto; }
+/* A smaller cover than the setlist's — the panel row is half the height. */
+.mini-row .art { width: 34px; height: 34px; border-radius: 8px; }
 .mini-title { font-size: 13px; font-weight: 500; color: var(--ink); }
 .mini-sub { font-size: 10.5px; color: var(--faint); margin-top: 1px; }
 .truncate { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
