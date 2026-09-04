@@ -618,15 +618,17 @@ html[dir="ltr"] .cal-head-title {
 .mini-row {
   display: flex; align-items: center; gap: 10px;
   padding: 8px; margin: 0 -8px; border-radius: 8px;
-  /* Start, not left: in Hebrew the row reads from the right, so the title
-     stays beside its number instead of drifting to the far side. */
+  /* Start, not left: in Hebrew the row reads from the right, so the words
+     stay beside the cover instead of drifting to the far side. */
   transition: background 0.13s ease; text-align: start; width: calc(100% + 16px);
 }
 .mini-row:hover { background: var(--raised-2); }
-.mini-num { font-family: var(--mono); font-size: 11px; color: var(--fainter); width: 14px; text-align: end; flex: 0 0 auto; }
+/* The number rides the title line, so the cover can lead the row. */
+.mini-line { display: flex; align-items: baseline; gap: 7px; min-width: 0; }
+.mini-num { font-family: var(--mono); font-size: 11px; color: var(--fainter); flex: 0 0 auto; }
 /* A smaller cover than the setlist's — the panel row is half the height. */
 .mini-row .art { width: 34px; height: 34px; border-radius: 8px; }
-.mini-title { font-size: 13px; font-weight: 500; color: var(--ink); }
+.mini-title { font-size: 13px; font-weight: 500; color: var(--ink); min-width: 0; }
 .mini-sub { font-size: 10.5px; color: var(--faint); margin-top: 1px; }
 .truncate { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .grow { min-width: 0; flex: 1; }
@@ -658,7 +660,7 @@ html[dir="ltr"] .cal-head-title {
 
 .set-head {
   display: grid; gap: 12px; align-items: center;
-  grid-template-columns: 38px 1fr 62px 74px 58px 80px;
+  grid-template-columns: 1fr 62px 74px 58px 22px 80px;
   padding: 0 12px 8px;
   border-bottom: 1px solid var(--raised-2);
 }
@@ -667,13 +669,17 @@ html[dir="ltr"] .cal-head-title {
 
 .set-row {
   display: grid; gap: 12px; align-items: center;
-  grid-template-columns: 38px 1fr 62px 74px 58px 80px;
+  /* The cover opens the row — the number rides the title line and the drag
+     handle waits at the far end, beside Remove. */
+  grid-template-columns: 1fr 62px 74px 58px 22px 80px;
   padding: 11px 12px; border-radius: 11px;
   border-top: 1.5px solid transparent;
   border-bottom: 1.5px solid transparent;
   transition: background 0.13s ease;
   width: 100%; text-align: start;
 }
+/* A bunker row cannot be dragged, so it drops the handle's column. */
+.set-head-plain, .set-row-plain { grid-template-columns: 1fr 62px 74px 58px 80px; }
 .set-row:hover { background: var(--raised); }
 .set-row.is-dragging { opacity: 0.35; }
 .set-row.is-over { border-top-color: var(--accent); }
@@ -701,8 +707,8 @@ html[dir="ltr"] .cal-head-title {
 .set-open .art { width: 38px; height: 38px; border-radius: 8px; }
 .set-lines { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
 
-.set-lead { display: flex; align-items: center; gap: 2px; }
-.grip { display: flex; color: var(--fainter); cursor: grab; margin-left: -4px; opacity: 0; transition: opacity 0.13s ease; }
+.set-lead { display: flex; align-items: center; justify-content: center; gap: 2px; }
+.grip { display: flex; color: var(--fainter); cursor: grab; opacity: 0; transition: opacity 0.13s ease; }
 .set-row:hover .grip, .set-row:focus-within .grip { opacity: 1; }
 .grip:active { cursor: grabbing; }
 .grip:disabled { cursor: default; }
@@ -1431,8 +1437,8 @@ button.att-status:hover { filter: brightness(1.3); }
   .set-wrap .scroll { padding-bottom: 26px; }
 
   .set-row {
-    grid-template-columns: 30px 1fr auto;
-    grid-template-areas: 'lead body actions';
+    grid-template-columns: 1fr 30px auto;
+    grid-template-areas: 'body lead actions';
     gap: 12px; padding: 13px 14px; border-radius: 13px;
     background: var(--raised); border: 1px solid var(--line);
     border-top: 1.5px solid var(--line);
@@ -1443,6 +1449,7 @@ button.att-status:hover { filter: brightness(1.3); }
   .set-row .move { width: 28px; height: 24px; border: 0; color: var(--fainter); }
   .set-row .move:disabled { opacity: 0.25; }
   .set-row > .set-body { grid-area: body; }
+  .set-row-plain { grid-template-columns: 1fr auto; grid-template-areas: 'body actions'; }
   .set-row > .set-key, .set-row > .set-tempo, .set-row > .set-time { display: none; }
   .set-row > .set-actions { grid-area: actions; }
   .set-row .kill { width: auto; height: 36px; padding: 0 10px; font-size: 12.5px; }

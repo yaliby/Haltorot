@@ -233,11 +233,11 @@ export default function RehearsalScreen() {
 
           {setSongs.length > 0 && (
             <div className="set-head">
-              <span>#</span>
               <span>{t('rehearsal.colTitle')}</span>
               <span>{t('common.key')}</span>
               <span>{t('common.tempo')}</span>
               <span className="right">{t('common.time')}</span>
+              <span />
               <span />
             </div>
           )}
@@ -277,38 +277,6 @@ export default function RehearsalScreen() {
                   onDrop={(e) => { e.preventDefault(); onDrop(); }}
                   onDragEnd={() => { dragFrom.current = null; dropTo.current = null; setDrag({ from: null, to: null }); }}
                 >
-                  <div className="set-lead">
-                    <button
-                      className="grip hide-sm"
-                      aria-label={t('rehearsal.reorder', { title: s.title })}
-                      title={t('rehearsal.reorderHint')}
-                      disabled={filtering}
-                      onKeyDown={(e) => {
-                        if (e.key === 'ArrowUp') { e.preventDefault(); move(s.index, s.index - 1); }
-                        if (e.key === 'ArrowDown') { e.preventDefault(); move(s.index, s.index + 2); }
-                      }}
-                    >
-                      <Icon name="grip" size={13} />
-                    </button>
-                    <span className="set-num hide-sm">{String(s.index + 1).padStart(2, '0')}</span>
-                    <button
-                      className="move show-sm"
-                      aria-label={t('rehearsal.moveUp', { title: s.title })}
-                      disabled={filtering || s.index === 0}
-                      onClick={() => move(s.index, s.index - 1)}
-                    >
-                      <Icon name="up" size={13} />
-                    </button>
-                    <button
-                      className="move show-sm"
-                      aria-label={t('rehearsal.moveDown', { title: s.title })}
-                      disabled={filtering || s.index === setSongs.length - 1}
-                      onClick={() => move(s.index, s.index + 2)}
-                    >
-                      <Icon name="down" size={13} />
-                    </button>
-                  </div>
-
                   <div className="set-body grow">
                     <button
                       className="set-open"
@@ -317,7 +285,7 @@ export default function RehearsalScreen() {
                       <SongArt song={s} fallback="note" />
                       <span className="set-lines">
                         <span className="title-line">
-                          <span className="show-sm set-num" style={{ width: 'auto' }}>{String(s.index + 1).padStart(2, '0')}</span>
+                          <span className="set-num" style={{ width: 'auto' }}>{String(s.index + 1).padStart(2, '0')}</span>
                           <span className="set-title truncate">{s.title}</span>
                           {s.needsWork && <span className="tag tag-work">{t('common.needsWork')}</span>}
                         </span>
@@ -347,6 +315,39 @@ export default function RehearsalScreen() {
                   </div>
 
                   <div className="set-time set-dur">{mmss(s.sec)}</div>
+
+                  {/* The reorder handle sits at the far end of the row: the
+                      cover leads it, the way it leads a library row. */}
+                  <div className="set-lead">
+                    <button
+                      className="grip hide-sm"
+                      aria-label={t('rehearsal.reorder', { title: s.title })}
+                      title={t('rehearsal.reorderHint')}
+                      disabled={filtering}
+                      onKeyDown={(e) => {
+                        if (e.key === 'ArrowUp') { e.preventDefault(); move(s.index, s.index - 1); }
+                        if (e.key === 'ArrowDown') { e.preventDefault(); move(s.index, s.index + 2); }
+                      }}
+                    >
+                      <Icon name="grip" size={13} />
+                    </button>
+                    <button
+                      className="move show-sm"
+                      aria-label={t('rehearsal.moveUp', { title: s.title })}
+                      disabled={filtering || s.index === 0}
+                      onClick={() => move(s.index, s.index - 1)}
+                    >
+                      <Icon name="up" size={13} />
+                    </button>
+                    <button
+                      className="move show-sm"
+                      aria-label={t('rehearsal.moveDown', { title: s.title })}
+                      disabled={filtering || s.index === setSongs.length - 1}
+                      onClick={() => move(s.index, s.index + 2)}
+                    >
+                      <Icon name="down" size={13} />
+                    </button>
+                  </div>
 
                   <div className="set-actions">
                     <button className="kill" aria-label={t('rehearsal.remove', { title: s.title })} onClick={() => remove(s)}>

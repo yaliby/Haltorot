@@ -852,12 +852,14 @@ export default function CalendarScreen() {
                 <div>
                   {setSongs.slice(0, 4).map((s, i) => (
                     <button key={s.id} className="mini-row" onClick={() => navigate(`/song/${s.id}?from=${selected}`)}>
-                      <span className="mini-num">{i + 1}</span>
-                      {/* The cover, or the blank tile — the key already has
-                          its badge at the end of the row. */}
+                      {/* The cover opens the row — the blank tile when there is
+                          none, since the key already has its badge at the end. */}
                       <SongArt song={s} fallback="note" />
                       <span className="grow">
-                        <span className="mini-title truncate" style={{ display: 'block' }}>{s.title}</span>
+                        <span className="mini-line">
+                          <span className="mini-num">{i + 1}</span>
+                          <span className="mini-title truncate">{s.title}</span>
+                        </span>
                         <span className="mini-sub">{s.artist}</span>
                       </span>
                       <span className="key-badge" style={hue(songKey(s))}>{songKey(s)}</span>

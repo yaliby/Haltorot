@@ -68,8 +68,7 @@ export default function BunkerScreen() {
           </div>
 
           {set.length > 0 && (
-            <div className="set-head">
-              <span>#</span>
+            <div className="set-head set-head-plain">
               <span>{t('common.title')}</span>
               <span>{t('common.key')}</span>
               <span>{t('common.tempo')}</span>
@@ -80,16 +79,13 @@ export default function BunkerScreen() {
 
           <div className="scroll" style={{ padding: '6px 0 26px' }}>
             {set.map((s, i) => (
-              <div key={s.id} className="set-row">
-                <div className="set-lead">
-                  <span className="set-num">{String(i + 1).padStart(2, '0')}</span>
-                </div>
-
+              <div key={s.id} className="set-row set-row-plain">
                 <div className="set-body grow">
                   <button className="set-open" onClick={() => navigate(`/song/${s.id}?from=bunker`)}>
                     <SongArt song={s} fallback="note" />
                     <span className="set-lines">
                       <span className="title-line">
+                        <span className="set-num" style={{ width: 'auto' }}>{String(i + 1).padStart(2, '0')}</span>
                         <span className="set-title truncate">{s.title}</span>
                         {s.needsWork && <span className="tag tag-work">{t('common.needsWork')}</span>}
                       </span>
