@@ -30,6 +30,22 @@ export default {
     libraryEmpty: 'הספרייה ריקה — ייבא שיר קודם.',
     toLibrary: 'לספרייה'
   },
+  instanceKey: {
+    title: 'סולם למופע הזה',
+    back: 'חזרה',
+    original: 'סולם מקורי',
+    originalHint: 'כפי שהוא כתוב בספרייה.',
+    transpose: 'שינוי סולם',
+    keyLabel: 'טון',
+    halfDown: '½ למטה',
+    toneDown: '1 למטה',
+    halfUp: '½ למעלה',
+    toneUp: '1 למעלה',
+    defaultHint: 'ברירת המחדל היא הסולם המקורי של השיר. שינוי כאן נשאר על הבאנקר או על החזרה — לא על הספרייה.',
+    changedHint: 'המופע הזה ינוגן ב־{to} (מ־{from}).',
+    badgeTitle: 'מנוגן ב־{to} ({n} מ־{from})',
+    fromKey: 'מ־{key}'
+  },
   toast: { undo: 'בטל' },
   roles: {
     Vocals: 'שירה',

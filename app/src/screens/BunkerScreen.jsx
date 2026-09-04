@@ -4,8 +4,9 @@ import { Icon } from '../components/Icon.jsx';
 import { SongArt } from '../components/SongArt.jsx';
 import { useStore } from '../store.jsx';
 import { useI18n } from '../i18n/index.js';
+import { InstanceKeyBadge, InstanceKeyPicker } from '../components/InstanceKeyPicker.jsx';
 import { hue, tempoHue } from '../lib/hues.js';
-import { songKey } from '../lib/chords.js';
+import { bunkerSongSteps, instanceKey, songKey } from '../lib/chords.js';
 import { mmss, runtime } from '../lib/dates.js';
 
 /* The standing set, on its own screen. Everything on it comes out of the
@@ -17,6 +18,8 @@ export default function BunkerScreen() {
   const navigate = useNavigate();
   const [adding, setAdding] = useState(false);
   const [poolQuery, setPoolQuery] = useState('');
+  const [picked, setPicked] = useState(null);
+  const [pickSteps, setPickSteps] = useState(0);
 
   const set = songs.filter((s) => s.bunker);
   const totalSec = set.reduce((a, s) => a + s.sec, 0);
@@ -26,9 +29,30 @@ export default function BunkerScreen() {
     .filter((s) => !s.bunker)
     .filter((s) => !pq || `${s.title} ${s.artist} ${songKey(s)}`.toLowerCase().includes(pq));
 
-  function put(song, on) {
-    dispatch({ type: 'set-bunker', songId: song.id, on });
+  function put(song, on, steps = 0) {
+    dispatch({ type: 'set-bunker', songId: song.id, on, steps });
     notify(t(on ? 'bunker.added' : 'bunker.removed', { title: song.title }));
+  }
+
+  function pick(song) {
+    setPicked(song);
+    setPickSteps(0);
+  }
+
+  function cancelPick() {
+    setPicked(null);
+    setPickSteps(0);
+  }
+
+  function confirmPick() {
+    if (!picked) return;
+    put(picked, true, pickSteps);
+    cancelPick();
+  }
+
+  function closeAdd() {
+    setAdding(false);
+    cancelPick();
   }
 
   return (
@@ -60,7 +84,10 @@ export default function BunkerScreen() {
               className={'ghost show-sm' + (adding ? ' is-on' : '')}
               style={{ marginInlineStart: 'auto' }}
               aria-expanded={adding}
-              onClick={() => setAdding((v) => !v)}
+              onClick={() => {
+                if (adding) closeAdd();
+                else setAdding(true);
+              }}
             >
               <Icon name="plus" size={14} />
               {t('bunker.addSong')}
@@ -78,7 +105,10 @@ export default function BunkerScreen() {
           )}
 
           <div className="scroll" style={{ padding: '6px 0 26px' }}>
-            {set.map((s, i) => (
+            {set.map((s, i) => {
+              const steps = bunkerSongSteps(s);
+              const playKey = instanceKey(s, steps);
+              return (
               <div key={s.id} className="set-row set-row-plain">
                 <div className="set-body grow">
                   <button className="set-open" onClick={() => navigate(`/song/${s.id}?from=bunker`)}>
@@ -87,11 +117,12 @@ export default function BunkerScreen() {
                       <span className="title-line">
                         <span className="set-num" style={{ width: 'auto' }}>{String(i + 1).padStart(2, '0')}</span>
                         <span className="set-title truncate">{s.title}</span>
+                        <InstanceKeyBadge song={s} steps={steps} />
                         {s.needsWork && <span className="tag tag-work">{t('common.needsWork')}</span>}
                       </span>
                       <span className="title-line" style={{ gap: 7 }}>
                         <span className="set-artist truncate">{s.artist}</span>
-                        <span className="show-sm key-badge" style={hue(songKey(s))}>{songKey(s)}</span>
+                        <span className="show-sm key-badge" style={hue(playKey)}>{playKey}</span>
                         <span className="show-sm mono" style={{ fontSize: 11, color: 'var(--faint)' }}>{s.bpm} {t('common.bpm')}</span>
                       </span>
                     </span>
@@ -101,11 +132,12 @@ export default function BunkerScreen() {
                 <div className="set-key">
                   <span
                     className="key-badge"
-                    style={hue(songKey(s))}
+                    style={hue(playKey)}
                     title={s.capo ? t('common.capoWith', { capo: s.capo }) : undefined}
                   >
-                    {songKey(s)}
+                    {playKey}
                   </span>
+                  {steps !== 0 && <span className="set-capo">{t('instanceKey.fromKey', { key: songKey(s) })}</span>}
                   {s.capo > 0 && <span className="set-capo">{t('common.capoWith', { capo: s.capo })}</span>}
                 </div>
 
@@ -127,7 +159,8 @@ export default function BunkerScreen() {
                   </button>
                 </div>
               </div>
-            ))}
+              );
+            })}
 
             {set.length === 0 && (
               <div className="empty empty-plain">
@@ -147,13 +180,23 @@ export default function BunkerScreen() {
         </div>
       </main>
 
-      {adding && <div className="sheet-scrim" onClick={() => setAdding(false)} />}
+      {adding && <div className="sheet-scrim" onClick={closeAdd} />}
 
       <aside className={'aside' + (adding ? ' is-sheet' : '')} style={{ width: 326, flex: '0 0 326px' }}>
+        {picked ? (
+          <InstanceKeyPicker
+            song={picked}
+            steps={pickSteps}
+            onSteps={setPickSteps}
+            onCancel={cancelPick}
+            onConfirm={confirmPick}
+            confirmLabel={t('bunker.addSong')}
+          />
+        ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16, minHeight: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div className="eyebrow">{t('bunker.addFromLibrary')}</div>
-            <button className="icon-btn show-sm" aria-label={t('common.close')} onClick={() => setAdding(false)}>
+            <button className="icon-btn show-sm" aria-label={t('common.close')} onClick={closeAdd}>
               <Icon name="close" size={14} />
             </button>
           </div>
@@ -176,7 +219,7 @@ export default function BunkerScreen() {
                   key={s.id}
                   className="mini-row"
                   style={{ margin: 0, width: '100%', padding: 10 }}
-                  onClick={() => put(s, true)}
+                  onClick={() => pick(s)}
                 >
                   <span className="grow">
                     <span className="mini-title truncate" style={{ display: 'block' }}>{s.title}</span>
@@ -198,6 +241,7 @@ export default function BunkerScreen() {
             </p>
           )}
         </div>
+        )}
       </aside>
     </>
   );

@@ -1,7 +1,7 @@
 globalThis.localStorage = { getItem: () => null, setItem: () => {}, removeItem: () => {} };
 console.error = () => {};
 
-const { transpose, chordsUsed, detectKey, songKey } = await import('../src/lib/chords.js');
+const { transpose, chordsUsed, detectKey, songKey, clampSteps, instanceKey, eventSongSteps, bunkerSongSteps } = await import('../src/lib/chords.js');
 const { monthGrid, monthWeekStart, weekOffset, cellsFromWeekStart, iso, runtime, mmss, relative, isISODate } = await import('../src/lib/dates.js');
 
 let fail = 0;
@@ -40,6 +40,13 @@ eq('capo 2 on an Em chart sounds F#m', songKey({ key: 'Em', capo: 2 }), 'F#m');
 eq('capo key is spelled like a chart', songKey({ key: 'Am', capo: 1 }), 'Bbm');
 eq('no capo leaves the key alone', songKey({ key: 'Bb', capo: 0 }), 'Bb');
 eq('a missing capo is no capo', songKey({ key: 'D' }), 'D');
+eq('clampSteps drops junk', clampSteps('x'), 0);
+eq('clampSteps pins to a semitone', clampSteps(2.6), 3);
+eq('clampSteps will not wrap past an octave', clampSteps(20), 11);
+eq('instance key is the sounding key moved', instanceKey({ key: 'Em', capo: 2 }, 1), 'Gm');
+eq('event steps ignore a zero', eventSongSteps({ steps: { a: 0 } }, 'a'), 0);
+eq('bunker steps only count when the song is in', bunkerSongSteps({ bunker: false, bunkerSteps: 3 }), 0);
+eq('bunker steps read the instance', bunkerSongSteps({ bunker: true, bunkerSteps: -2 }), -2);
 
 // --- calendar math: Aug 1 2026 is a Saturday, Aug 29 a Saturday
 const aug = monthGrid(2026, 7);
@@ -106,6 +113,25 @@ eq('set-bunker ignores an unknown song',
 eq('a rehearsal booked after that leaves the song behind',
    reducer(outOfBunker, { type: 'create-rehearsal', date: 'e', time: '20:00', place: 'X', kind: 'r' }).events.e.songs, ['c']);
 eq('original state is untouched', order(base), 'abcd');
+
+const keyed = reducer(banked, { type: 'set-bunker', songId: 'b', on: true, steps: 2 });
+eq('set-bunker keeps an instance transpose', keyed.songs.find((s) => s.id === 'b').bunkerSteps, 2);
+eq('set-bunker does not rewrite the library key', keyed.songs.find((s) => s.id === 'b').key, 'C');
+eq('set-bunker original leaves no steps field',
+   reducer(banked, { type: 'set-bunker', songId: 'b', on: true }).songs.find((s) => s.id === 'b').bunkerSteps, undefined);
+eq('set-bunker off clears the instance transpose',
+   reducer(keyed, { type: 'set-bunker', songId: 'b', on: false }).songs.find((s) => s.id === 'b').bunkerSteps, undefined);
+const fromBunker = reducer(keyed, { type: 'create-rehearsal', date: 'e', time: '20:00', place: 'X', kind: 'r' });
+eq('a new rehearsal copies bunker instance keys', fromBunker.events.e.steps, { b: 2 });
+eq('a show still starts empty of steps',
+   reducer(keyed, { type: 'create-rehearsal', date: 'e', time: '21:00', place: 'X', kind: 's' }).events.e.steps, undefined);
+
+const withInstance = reducer(base, { type: 'add-song', date: 'd', songId: 'e', steps: -1 });
+eq('add-song stores an instance transpose', withInstance.events.d.steps, { e: -1 });
+eq('add-song in the original key leaves steps off',
+   reducer(base, { type: 'add-song', date: 'd', songId: 'e' }).events.d.steps, undefined);
+eq('remove-song drops that instance key',
+   reducer(withInstance, { type: 'remove-song', date: 'd', songId: 'e' }).events.d.steps, undefined);
 
 // --- editing and deleting a booking
 eq('update-rehearsal patches the day',

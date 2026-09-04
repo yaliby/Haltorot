@@ -52,6 +52,28 @@ export function songKey(song) {
   return spelling ? spelling[moved.endsWith('m') ? 1 : 0] : moved;
 }
 
+/** Semitone offset for one bunker / setlist instance. 0 is the song's own key. */
+export function clampSteps(n) {
+  const v = Number(n);
+  if (!Number.isFinite(v)) return 0;
+  return Math.max(-11, Math.min(11, Math.round(v)));
+}
+
+/** The key that instance will be played in — the song's sounding key, moved. */
+export function instanceKey(song, steps) {
+  return transpose(songKey(song), clampSteps(steps));
+}
+
+/** Non-zero transpose stored on a rehearsal / show for one song. */
+export function eventSongSteps(event, songId) {
+  return clampSteps(event?.steps?.[songId]);
+}
+
+/** Non-zero transpose stored on the bunker instance of a song. */
+export function bunkerSongSteps(song) {
+  return song?.bunker ? clampSteps(song.bunkerSteps) : 0;
+}
+
 /** Pitch class of a root name, 0–11 from C ("Bb" -> 10). -1 if it isn't one. */
 export function pitchClass(name) {
   const m = /^([A-G][#b]?)/.exec(name || '');

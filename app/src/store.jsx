@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useReducer, useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { EVENTS, SONGS, TODAY, ROOMS } from './data.js';
 import { isDeletableSong } from './lib/songs.js';
+import { clampSteps } from './lib/chords.js';
 import { freezeUndo } from './lib/undo.js';
 import { createLogger } from './lib/logger.js';
 
@@ -39,6 +40,37 @@ const isNewRoom = (name, rooms) => {
 
 /** The ids of the standing set, in library order. */
 const bunkerSongs = (songs) => songs.filter((s) => s.bunker).map((s) => s.id);
+
+/** Non-zero instance transposes of the standing set, keyed by song id. */
+const bunkerSteps = (songs) => {
+  const steps = {};
+  for (const s of songs) {
+    if (!s.bunker) continue;
+    const n = clampSteps(s.bunkerSteps);
+    if (n) steps[s.id] = n;
+  }
+  return steps;
+};
+
+/** Drop one song's instance transpose from an event, leaving `steps` off when empty. */
+const withoutSongSteps = (ev, songId) => {
+  if (!ev.steps || ev.steps[songId] == null) return ev;
+  const steps = { ...ev.steps };
+  delete steps[songId];
+  if (!Object.keys(steps).length) {
+    const next = { ...ev };
+    delete next.steps;
+    return next;
+  }
+  return { ...ev, steps };
+};
+
+/** Attach a non-zero instance transpose, or strip it when the song stays original. */
+const withSongSteps = (ev, songId, n) => {
+  const steps = clampSteps(n);
+  if (!steps) return withoutSongSteps(ev, songId);
+  return { ...ev, steps: { ...(ev.steps || {}), [songId]: steps } };
+};
 
 /** Enough of a chart to draw without printing `undefined` over a lyric. */
 const isSections = (v) =>
@@ -124,11 +156,20 @@ export function reducer(state, action) {
          don't feel like tonight comes off it. A show starts empty: its set is
          built for the room, not out of habit. */
       const songs = kind === 's' ? [] : bunkerSongs(state.songs);
+      const steps = kind === 's' ? {} : bunkerSteps(state.songs);
       return {
         ...state,
         events: {
           ...state.events,
-          [date]: { kind: kind || 'r', time, end: end || '', place, songs, done: [] }
+          [date]: {
+            kind: kind || 'r',
+            time,
+            end: end || '',
+            place,
+            songs,
+            done: [],
+            ...(Object.keys(steps).length ? { steps } : {})
+          }
         }
       };
     }
@@ -166,7 +207,14 @@ export function reducer(state, action) {
       if (!ev || ev.songs.includes(action.songId)) return state;
       return {
         ...state,
-        events: { ...state.events, [action.date]: { ...ev, songs: [...ev.songs, action.songId] } }
+        events: {
+          ...state.events,
+          [action.date]: withSongSteps(
+            { ...ev, songs: [...ev.songs, action.songId] },
+            action.songId,
+            action.steps
+          )
+        }
       };
     }
 
@@ -177,11 +225,14 @@ export function reducer(state, action) {
         ...state,
         events: {
           ...state.events,
-          [action.date]: {
-            ...ev,
-            songs: ev.songs.filter((id) => id !== action.songId),
-            done: ev.done.filter((id) => id !== action.songId)
-          }
+          [action.date]: withoutSongSteps(
+            {
+              ...ev,
+              songs: ev.songs.filter((id) => id !== action.songId),
+              done: ev.done.filter((id) => id !== action.songId)
+            },
+            action.songId
+          )
         }
       };
     }
@@ -232,11 +283,14 @@ export function reducer(state, action) {
       const events = {};
       for (const [date, ev] of Object.entries(state.events)) {
         events[date] = ev.songs.includes(action.songId)
-          ? {
-              ...ev,
-              songs: ev.songs.filter((id) => id !== action.songId),
-              done: ev.done.filter((id) => id !== action.songId)
-            }
+          ? withoutSongSteps(
+              {
+                ...ev,
+                songs: ev.songs.filter((id) => id !== action.songId),
+                done: ev.done.filter((id) => id !== action.songId)
+              },
+              action.songId
+            )
           : ev;
       }
       return { ...state, songs: state.songs.filter((s) => s.id !== action.songId), events };
@@ -251,10 +305,19 @@ export function reducer(state, action) {
       }
       const on = !!action.on;
       if (!!song.bunker === on) return state;
-      log.info('set-bunker', { id: song.id, title: song.title, on });
+      const steps = on ? clampSteps(action.steps) : 0;
+      log.info('set-bunker', { id: song.id, title: song.title, on, steps });
       return {
         ...state,
-        songs: state.songs.map((s) => (s.id === action.songId ? { ...s, bunker: on } : s))
+        songs: state.songs.map((s) => {
+          if (s.id !== action.songId) return s;
+          if (!on) {
+            const next = { ...s, bunker: false };
+            delete next.bunkerSteps;
+            return next;
+          }
+          return steps ? { ...s, bunker: true, bunkerSteps: steps } : { ...s, bunker: true };
+        })
       };
     }
 

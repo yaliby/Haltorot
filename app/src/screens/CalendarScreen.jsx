@@ -19,7 +19,8 @@ import {
   dowLabels
 } from '../lib/dates.js';
 import { hue } from '../lib/hues.js';
-import { songKey } from '../lib/chords.js';
+import { InstanceKeyBadge } from '../components/InstanceKeyPicker.jsx';
+import { eventSongSteps, instanceKey } from '../lib/chords.js';
 
 /* The month strip is a three-page carousel: previous, current, next. It rides
    the finger 1:1 and then settles onto whichever page the swipe was pulling
@@ -850,7 +851,10 @@ export default function CalendarScreen() {
                   <span style={{ fontSize: 11, color: 'var(--fainter)' }}>{t('calendar.firstN', { n: Math.min(4, setSongs.length) })}</span>
                 </div>
                 <div>
-                  {setSongs.slice(0, 4).map((s, i) => (
+                  {setSongs.slice(0, 4).map((s, i) => {
+                    const steps = eventSongSteps(event, s.id);
+                    const playKey = instanceKey(s, steps);
+                    return (
                     <button key={s.id} className="mini-row" onClick={() => navigate(`/song/${s.id}?from=${selected}`)}>
                       {/* The cover opens the row — the blank tile when there is
                           none, since the key already has its badge at the end. */}
@@ -859,12 +863,14 @@ export default function CalendarScreen() {
                         <span className="mini-line">
                           <span className="mini-num">{i + 1}</span>
                           <span className="mini-title truncate">{s.title}</span>
+                          <InstanceKeyBadge song={s} steps={steps} />
                         </span>
                         <span className="mini-sub">{s.artist}</span>
                       </span>
-                      <span className="key-badge" style={hue(songKey(s))}>{songKey(s)}</span>
+                      <span className="key-badge" style={hue(playKey)}>{playKey}</span>
                     </button>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             ) : (

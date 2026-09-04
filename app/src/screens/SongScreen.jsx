@@ -5,7 +5,7 @@ import { useStore } from '../store.jsx';
 import { useI18n } from '../i18n/index.js';
 import { BAND } from '../data.js';
 import { hue, memberHue, tempoHue } from '../lib/hues.js';
-import { transpose, chordsUsed, songKey } from '../lib/chords.js';
+import { bunkerSongSteps, eventSongSteps, transpose, chordsUsed, songKey } from '../lib/chords.js';
 import { longDate, mmss, isISODate } from '../lib/dates.js';
 import { consumeNoteAutoShow } from '../lib/sessionNotes.js';
 import { hasHebrew } from '../lib/text.js';
@@ -46,6 +46,13 @@ export default function SongScreen() {
      somewhere the band opened the song from, and the way back leads there. */
   const fromBunker = from === 'bunker';
   const back = inSet ? `/rehearsal/${inSet}` : fromBunker ? '/bunker' : '/songs';
+  /* Opening from a bunker or a setlist starts on that instance's key.
+     Transposing on this screen is still local — it does not rewrite the song. */
+  const instanceSteps = event
+    ? eventSongSteps(event, id)
+    : fromBunker
+      ? bunkerSongSteps(song)
+      : 0;
 
   const setSongs = useMemo(
     () => (event ? event.songs.map((sid) => songs.find((s) => s.id === sid)).filter(Boolean) : []),
@@ -85,14 +92,14 @@ export default function SongScreen() {
   // its own. The note button still opens it any time after that.
   const hasNote = !!song?.note;
   useEffect(() => {
-    setSteps(0);
+    setSteps(instanceSteps);
     setCapoOff(false);
     setJumpOpen(false);
     setAlign(false);
     setDraft(null);
     setSel(null);
     setNoteOpen(hasNote && consumeNoteAutoShow('song', id));
-  }, [id, hasNote]);
+  }, [id, hasNote, instanceSteps]);
   useEffect(() => { if (noteOpen) notePopRef.current?.focus(); }, [noteOpen]);
 
   useEffect(() => {

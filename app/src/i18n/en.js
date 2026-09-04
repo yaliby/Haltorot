@@ -30,6 +30,22 @@ export default {
     libraryEmpty: 'The library is empty — import a song first.',
     toLibrary: 'To the library'
   },
+  instanceKey: {
+    title: 'Key for this instance',
+    back: 'Back',
+    original: 'Original key',
+    originalHint: 'Play it as written in the library.',
+    transpose: 'Transpose',
+    keyLabel: 'KEY',
+    halfDown: '½ down',
+    toneDown: '1 down',
+    halfUp: '½ up',
+    toneUp: '1 up',
+    defaultHint: 'The default is the song’s own key. A change here stays on this bunker or set — not on the library.',
+    changedHint: 'This instance will play in {to} (from {from}).',
+    badgeTitle: 'Played in {to} ({n} from {from})',
+    fromKey: 'from {key}'
+  },
   toast: { undo: 'Undo' },
   roles: {
     Vocals: 'Vocals',

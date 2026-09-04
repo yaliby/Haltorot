@@ -5,8 +5,9 @@ import { SongArt } from '../components/SongArt.jsx';
 import { useStore, useRooms } from '../store.jsx';
 import { useI18n } from '../i18n/index.js';
 import { BAND } from '../data.js';
+import { InstanceKeyBadge, InstanceKeyPicker } from '../components/InstanceKeyPicker.jsx';
 import { hue, memberHue, tempoHue } from '../lib/hues.js';
-import { songKey } from '../lib/chords.js';
+import { eventSongSteps, instanceKey, songKey } from '../lib/chords.js';
 import { monthName, parseISO, longDate, weekdayOf, mmss, runtime, relative, isISODate, timeSpan } from '../lib/dates.js';
 
 export default function RehearsalScreen() {
@@ -18,6 +19,8 @@ export default function RehearsalScreen() {
 
   const [query, setQuery] = useState('');
   const [poolQuery, setPoolQuery] = useState('');
+  const [picked, setPicked] = useState(null);
+  const [pickSteps, setPickSteps] = useState(0);
   const [mode, setMode] = useState('info');
   const [form, setForm] = useState(null);
   const [drag, setDrag] = useState({ from: null, to: null });
@@ -85,8 +88,8 @@ export default function RehearsalScreen() {
   const q = query.trim().toLowerCase();
   const filtering = q.length > 0;
   const visible = setSongs
-    .map((s, i) => ({ ...s, index: i }))
-    .filter((s) => !q || `${s.title} ${s.artist} ${songKey(s)}`.toLowerCase().includes(q));
+    .map((s, i) => ({ ...s, index: i, instanceSteps: eventSongSteps(event, s.id) }))
+    .filter((s) => !q || `${s.title} ${s.artist} ${songKey(s)} ${instanceKey(s, s.instanceSteps)}`.toLowerCase().includes(q));
 
   const pq = poolQuery.trim().toLowerCase();
   const pool = songs
@@ -97,7 +100,10 @@ export default function RehearsalScreen() {
 
   const attendance = event.att || {};
   const nextStatus = { undefined: 'in', in: 'late', late: 'out', out: '' };
-  const keyTally = setSongs.reduce((acc, s) => ({ ...acc, [songKey(s)]: (acc[songKey(s)] || 0) + 1 }), {});
+  const keyTally = setSongs.reduce((acc, s) => {
+    const k = instanceKey(s, eventSongSteps(event, s.id));
+    return { ...acc, [k]: (acc[k] || 0) + 1 };
+  }, {});
 
   function move(from, to) {
     if (from === null || to === null || to === from || to === from + 1) return;
@@ -118,9 +124,30 @@ export default function RehearsalScreen() {
     notify(t('rehearsal.removed', { title: song.title }), { events });
   }
 
-  function add(song) {
-    dispatch({ type: 'add-song', date, songId: song.id });
+  function add(song, steps = 0) {
+    dispatch({ type: 'add-song', date, songId: song.id, steps });
     notify(t('rehearsal.addedToSet', { title: song.title }), { events });
+  }
+
+  function pick(song) {
+    setPicked(song);
+    setPickSteps(0);
+  }
+
+  function cancelPick() {
+    setPicked(null);
+    setPickSteps(0);
+  }
+
+  function confirmPick() {
+    if (!picked) return;
+    add(picked, pickSteps);
+    cancelPick();
+  }
+
+  function closeSheet() {
+    setMode('info');
+    cancelPick();
   }
 
   function openEdit() {
@@ -222,7 +249,10 @@ export default function RehearsalScreen() {
                 <button
                   className={'ghost' + (mode === 'add' ? ' is-on' : '')}
                   aria-expanded={mode === 'add'}
-                  onClick={() => setMode((v) => (v === 'add' ? 'info' : 'add'))}
+                  onClick={() => {
+                    if (mode === 'add') closeSheet();
+                    else { cancelPick(); setMode('add'); }
+                  }}
                 >
                   <Icon name="plus" size={14} />
                   {t('rehearsal.addSong')}
@@ -287,11 +317,12 @@ export default function RehearsalScreen() {
                         <span className="title-line">
                           <span className="set-num" style={{ width: 'auto' }}>{String(s.index + 1).padStart(2, '0')}</span>
                           <span className="set-title truncate">{s.title}</span>
+                          <InstanceKeyBadge song={s} steps={s.instanceSteps} />
                           {s.needsWork && <span className="tag tag-work">{t('common.needsWork')}</span>}
                         </span>
                         <span className="title-line" style={{ gap: 7 }}>
                           <span className="set-artist truncate">{s.artist}</span>
-                          <span className="show-sm key-badge" style={hue(songKey(s))}>{songKey(s)}</span>
+                          <span className="show-sm key-badge" style={hue(instanceKey(s, s.instanceSteps))}>{instanceKey(s, s.instanceSteps)}</span>
                           <span className="show-sm mono" style={{ fontSize: 11, color: 'var(--faint)' }}>{s.bpm} {t('common.bpm')}</span>
                         </span>
                       </span>
@@ -301,11 +332,12 @@ export default function RehearsalScreen() {
                   <div className="set-key">
                     <span
                       className="key-badge"
-                      style={hue(songKey(s))}
+                      style={hue(instanceKey(s, s.instanceSteps))}
                       title={s.capo ? t('common.capoWith', { capo: s.capo }) : undefined}
                     >
-                      {songKey(s)}
+                      {instanceKey(s, s.instanceSteps)}
                     </span>
+                    {s.instanceSteps !== 0 && <span className="set-capo">{t('instanceKey.fromKey', { key: songKey(s) })}</span>}
                     {s.capo > 0 && <span className="set-capo">{t('common.capoWith', { capo: s.capo })}</span>}
                   </div>
 
@@ -381,17 +413,27 @@ export default function RehearsalScreen() {
         </div>
       </main>
 
-      {mode !== 'info' && <div className="sheet-scrim" onClick={() => setMode('info')} />}
+      {mode !== 'info' && <div className="sheet-scrim" onClick={closeSheet} />}
 
       <aside
         className={'aside' + (mode === 'info' ? '' : ' is-sheet')}
         style={{ width: 326, flex: '0 0 326px' }}
       >
         {mode === 'add' ? (
+          picked ? (
+            <InstanceKeyPicker
+              song={picked}
+              steps={pickSteps}
+              onSteps={setPickSteps}
+              onCancel={cancelPick}
+              onConfirm={confirmPick}
+              confirmLabel={t('rehearsal.addSong')}
+            />
+          ) : (
           <div className="slidein" style={{ display: 'flex', flexDirection: 'column', gap: 16, minHeight: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div className="eyebrow">{t('rehearsal.addFromLibrary')}</div>
-              <button className="icon-btn" aria-label={t('common.close')} onClick={() => setMode('info')}>
+              <button className="icon-btn" aria-label={t('common.close')} onClick={closeSheet}>
                 <Icon name="close" size={14} />
               </button>
             </div>
@@ -410,7 +452,7 @@ export default function RehearsalScreen() {
             {pool.length ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 3, overflowY: 'auto' }}>
                 {pool.map((s) => (
-                  <button key={s.id} className="mini-row" style={{ margin: 0, width: '100%', padding: 10 }} onClick={() => add(s)}>
+                  <button key={s.id} className="mini-row" style={{ margin: 0, width: '100%', padding: 10 }} onClick={() => pick(s)}>
                     <span className="grow">
                       <span className="mini-title truncate" style={{ display: 'block' }}>{s.title}</span>
                       <span className="mini-sub">{s.artist} · {songKey(s)} · {s.bpm} BPM</span>
@@ -429,6 +471,7 @@ export default function RehearsalScreen() {
               </p>
             )}
           </div>
+          )
         ) : mode === 'edit' ? (
           <div className="slidein" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>

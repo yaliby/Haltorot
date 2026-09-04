@@ -55,7 +55,7 @@ function rowToSong(r) {
     sections: Array.isArray(r.sections) ? r.sections : [],
     ...(r.artwork ? { artwork: r.artwork } : {}),
     ...(r.needs_work ? { needsWork: true } : {}),
-    ...(r.bunker ? { bunker: true } : {}),
+    ...(r.bunker ? { bunker: true, ...(r.bunker_steps ? { bunkerSteps: r.bunker_steps } : {}) } : {}),
     ...(r.custom ? { custom: true } : {}),
     ...(r.note ? { note: r.note } : {}),
     ...(r.note_by ? { noteBy: r.note_by } : {}),
@@ -79,6 +79,7 @@ function songToRow(s) {
     own: !!s.own,
     needs_work: !!s.needsWork,
     bunker: !!s.bunker,
+    bunker_steps: s.bunker ? (s.bunkerSteps || 0) : 0,
     custom: !!s.custom,
     sections: s.sections ?? [],
     artwork: s.artwork ?? null,
@@ -93,6 +94,9 @@ function songToRow(s) {
 /** Rows for one date, assembled into the event object the screens read. */
 function rowToEvent(r) {
   const set = (r.event_songs || []).slice().sort((a, b) => a.pos - b.pos);
+  const steps = Object.fromEntries(
+    set.filter((s) => s.steps).map((s) => [s.song_id, s.steps])
+  );
   return {
     kind: r.kind,
     time: r.time,
@@ -100,6 +104,7 @@ function rowToEvent(r) {
     place: r.place,
     songs: set.map((s) => s.song_id),
     done: set.filter((s) => s.done).map((s) => s.song_id),
+    ...(Object.keys(steps).length ? { steps } : {}),
     ...((r.attendance || []).length
       ? { att: Object.fromEntries(r.attendance.map((a) => [a.member_id, a.status])) }
       : {})
@@ -110,7 +115,7 @@ function rowToEvent(r) {
 export async function loadAll() {
   const [songs, events, rooms] = await Promise.all([
     supabase.from('songs').select('*'),
-    supabase.from('events').select('*, event_songs(song_id, pos, done), attendance(member_id, status)'),
+    supabase.from('events').select('*, event_songs(song_id, pos, done, steps), attendance(member_id, status)'),
     supabase.from('rooms').select('name')
   ]);
   for (const r of [songs, events, rooms]) if (r.error) throw r.error;
@@ -137,7 +142,8 @@ async function writeSetlist(date, ev) {
         event_date: date,
         song_id: songId,
         pos,
-        done: done.has(songId)
+        done: done.has(songId),
+        steps: ev.steps?.[songId] || 0
       }))
     )
   );
@@ -161,6 +167,7 @@ async function replaceAll(state) {
         place: ev.place,
         songs: ev.songs || [],
         done: ev.done || [],
+        steps: ev.steps || {},
         att: ev.att || {}
       }))
     }
@@ -217,7 +224,10 @@ const writers = {
   'set-bunker': async (a, s) => {
     const song = s.songs.find((x) => x.id === a.songId);
     if (!song) return;
-    ok(await supabase.from('songs').update({ bunker: !!song.bunker }).eq('id', a.songId));
+    ok(await supabase.from('songs').update({
+      bunker: !!song.bunker,
+      bunker_steps: song.bunker ? (song.bunkerSteps || 0) : 0
+    }).eq('id', a.songId));
   },
   'edit-chart': async (a) => {
     ok(await supabase.from('songs').update({ sections: a.sections }).eq('id', a.songId));

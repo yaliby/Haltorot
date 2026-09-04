@@ -36,6 +36,8 @@ create table if not exists songs (
   custom        boolean not null default false,
   -- The standing set: every new rehearsal opens with these songs already on it.
   bunker        boolean not null default false,
+  -- Semitone offset for that bunker instance only. 0 is the song's own key.
+  bunker_steps  integer not null default 0 check (bunker_steps between -11 and 11),
   -- The chart itself: [{ label, bars, accent, lines: [[{ c, t }]] }]
   -- stored whole, exactly the shape the renderer already expects.
   sections      jsonb not null default '[]'::jsonb,
@@ -55,6 +57,7 @@ create table if not exists songs (
 -- exists, so columns added after the first deploy need saying out loud.
 alter table songs add column if not exists artwork text;
 alter table songs add column if not exists bunker boolean not null default false;
+alter table songs add column if not exists bunker_steps integer not null default 0;
 
 create table if not exists events (
   date       date primary key,             -- one booking per day, as the app assumes
@@ -72,9 +75,12 @@ create table if not exists event_songs (
   song_id    text    not null references songs (id)   on delete cascade,
   pos        integer not null default 0,
   done       boolean not null default false,
+  -- Semitone offset for this setlist instance only. 0 is the song's own key.
+  steps      integer not null default 0 check (steps between -11 and 11),
   primary key (event_date, song_id)
 );
 create index if not exists event_songs_order on event_songs (event_date, pos);
+alter table event_songs add column if not exists steps integer not null default 0;
 
 create table if not exists attendance (
   event_date date not null references events (date)   on delete cascade,
@@ -116,22 +122,22 @@ begin
   delete from events where date is not null;   -- cascades to setlists and attendance
 
   insert into songs (id, title, artist, key, bpm, sec, capo, time_sig, own,
-                     needs_work, custom, bunker, sections, artwork, note, note_by, note_at,
+                     needs_work, custom, bunker, bunker_steps, sections, artwork, note, note_by, note_at,
                      last_played, import_source)
   select id, title, artist, key, bpm, sec, capo, time_sig, own,
-         needs_work, custom, coalesce(bunker, false), sections, artwork, note, note_by, note_at,
+         needs_work, custom, coalesce(bunker, false), coalesce(bunker_steps, 0), sections, artwork, note, note_by, note_at,
          last_played, import_source
     from jsonb_to_recordset(payload -> 'songs') as x (
       id text, title text, artist text, key text, bpm integer, sec integer,
       capo integer, time_sig text, own boolean, needs_work boolean,
-      custom boolean, bunker boolean, sections jsonb, artwork text, note text, note_by text,
+      custom boolean, bunker boolean, bunker_steps integer, sections jsonb, artwork text, note text, note_by text,
       note_at timestamptz, last_played date, import_source text)
   on conflict (id) do update set
     title = excluded.title, artist = excluded.artist, key = excluded.key,
     bpm = excluded.bpm, sec = excluded.sec, capo = excluded.capo,
     time_sig = excluded.time_sig, own = excluded.own,
     needs_work = excluded.needs_work, custom = excluded.custom,
-    bunker = excluded.bunker,
+    bunker = excluded.bunker, bunker_steps = excluded.bunker_steps,
     sections = excluded.sections, artwork = excluded.artwork,
     note = excluded.note,
     note_by = excluded.note_by, note_at = excluded.note_at,
@@ -147,9 +153,10 @@ begin
       values (d, ev ->> 'kind', ev ->> 'time',
               coalesce(ev ->> 'end_time', ''), coalesce(ev ->> 'place', ''));
 
-    insert into event_songs (event_date, song_id, pos, done)
+    insert into event_songs (event_date, song_id, pos, done, steps)
       select d, s.value #>> '{}', s.pos - 1,
-             jsonb_exists(coalesce(ev -> 'done', '[]'::jsonb), s.value #>> '{}')
+             jsonb_exists(coalesce(ev -> 'done', '[]'::jsonb), s.value #>> '{}'),
+             coalesce((ev -> 'steps' ->> (s.value #>> '{}'))::integer, 0)
         from jsonb_array_elements(coalesce(ev -> 'songs', '[]'::jsonb))
              with ordinality as s (value, pos);
 

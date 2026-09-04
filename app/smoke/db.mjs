@@ -110,6 +110,16 @@ async function openPicker() {
   return page.$$('button.mini-row');
 }
 
+/* Adding now stops on the instance-key picker. Confirm leaves the song in
+   its original key — the default — which is what the older one-click path did. */
+async function addFromPicker(row) {
+  await row.click();
+  await page.waitForTimeout(400);
+  const confirm = await page.$('[data-instance-key-confirm]');
+  if (confirm) await confirm.click();
+  await page.waitForTimeout(800);
+}
+
 try {
   const FIX_CHART = [{ label: 'V', bars: '4', lines: [[{ c: 'D', t: 'hello there' }]] }];
   await q(`delete from events where date = $1`, [BUSY]);
@@ -205,7 +215,7 @@ try {
 
   let offered = await openPicker();
   check('setlist picker lists the library', offered.length > 0, `${offered.length} songs`);
-  for (const row of offered.slice(0, 3)) { await row.click(); await page.waitForTimeout(800); }
+  for (const row of offered.slice(0, 3)) { await addFromPicker(row); }
   let set = await q(`select song_id, pos from event_songs where event_date = $1 order by pos`, [FREE]);
   check('setlist rows are written', set.length === 3, JSON.stringify(set.map((r) => r.song_id)));
   check('positions are contiguous from zero', set.every((r, i) => r.pos === i));
@@ -368,7 +378,7 @@ try {
   const beforeUndo = await counts();
   const more = await openPicker();
   check('picker reopens on a filled setlist', more.length > 0, `${more.length} songs`);
-  if (more.length) { await more[0].click(); await page.waitForTimeout(1000); }
+  if (more.length) { await addFromPicker(more[0]); }
   const undo = await page.$('.toast-undo');
   check('undo is offered', !!undo);
   if (undo) { await undo.click(); await page.waitForTimeout(2500); }
