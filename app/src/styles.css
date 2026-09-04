@@ -211,6 +211,15 @@ h1, h2, h3 { margin: 0; font-family: var(--display); letter-spacing: -0.028em; f
   view-transition-name: app-toggles;
 }
 
+/* On the calendar the toggles sit in the header margin; the month strip should
+   slide in front of them, not tuck underneath. */
+.app-body:has(.cal-main) .app-toggles { z-index: 3; }
+.cal-main.is-dragging,
+.cal-main.is-settling {
+  position: relative;
+  z-index: 4;
+}
+
 .app:has(.is-stage) .app-toggles { display: none; }
 
 .rail {
@@ -1538,6 +1547,11 @@ button.att-status:hover { filter: brightness(1.3); }
   animation-duration: 0.56s;
   animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
 }
+
+html:has(.cal-main)::view-transition-group(app-toggles) { z-index: 1; }
+html:has(.cal-main)::view-transition-group(cal-main),
+html:has(.cal-main)::view-transition-group(cal-head),
+html:has(.cal-main)::view-transition-group(cal-grid) { z-index: 2; }
 
 html[data-locale-slide="ltr"]::view-transition-old(*) {
   animation: locale-out-ltr 0.48s cubic-bezier(0.22, 1, 0.36, 1) both;
