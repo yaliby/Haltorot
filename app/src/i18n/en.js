@@ -39,8 +39,7 @@ export default {
     keyLabel: 'KEY',
     defaultHint: 'The default is the song’s own key. A change here stays on this bunker or set — not on the library.',
     changedHint: 'This instance will play in {to} (from {from}).',
-    badgeTitle: 'Played in {to} (original {from})',
-    fromKey: 'from {key}'
+    badgeTitle: 'Played in {to} (original {from})'
   },
   toast: { undo: 'Undo' },
   roles: {

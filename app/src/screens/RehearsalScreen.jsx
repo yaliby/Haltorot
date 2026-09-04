@@ -322,7 +322,7 @@ export default function RehearsalScreen() {
                         </span>
                         <span className="title-line" style={{ gap: 7 }}>
                           <span className="set-artist truncate">{s.artist}</span>
-                          <span className="show-sm key-badge" style={hue(instanceKey(s, s.instanceSteps))}>{instanceKey(s, s.instanceSteps)}</span>
+                          <span className="show-sm key-badge" style={hue(songKey(s))}>{songKey(s)}</span>
                           <span className="show-sm mono" style={{ fontSize: 11, color: 'var(--faint)' }}>{s.bpm} {t('common.bpm')}</span>
                         </span>
                       </span>
@@ -332,12 +332,11 @@ export default function RehearsalScreen() {
                   <div className="set-key">
                     <span
                       className="key-badge"
-                      style={hue(instanceKey(s, s.instanceSteps))}
+                      style={hue(songKey(s))}
                       title={s.capo ? t('common.capoWith', { capo: s.capo }) : undefined}
                     >
-                      {instanceKey(s, s.instanceSteps)}
+                      {songKey(s)}
                     </span>
-                    {s.instanceSteps !== 0 && <span className="set-capo">{t('instanceKey.fromKey', { key: songKey(s) })}</span>}
                     {s.capo > 0 && <span className="set-capo">{t('common.capoWith', { capo: s.capo })}</span>}
                   </div>
 

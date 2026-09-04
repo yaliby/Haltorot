@@ -6,7 +6,7 @@ import { useStore } from '../store.jsx';
 import { useI18n } from '../i18n/index.js';
 import { InstanceKeyBadge, InstanceKeyPicker } from '../components/InstanceKeyPicker.jsx';
 import { hue, tempoHue } from '../lib/hues.js';
-import { bunkerSongSteps, instanceKey, songKey } from '../lib/chords.js';
+import { bunkerSongSteps, songKey } from '../lib/chords.js';
 import { mmss, runtime } from '../lib/dates.js';
 
 /* The standing set, on its own screen. Everything on it comes out of the
@@ -107,7 +107,7 @@ export default function BunkerScreen() {
           <div className="scroll" style={{ padding: '6px 0 26px' }}>
             {set.map((s, i) => {
               const steps = bunkerSongSteps(s);
-              const playKey = instanceKey(s, steps);
+              const origKey = songKey(s);
               return (
               <div key={s.id} className="set-row set-row-plain">
                 <div className="set-body grow">
@@ -122,7 +122,7 @@ export default function BunkerScreen() {
                       </span>
                       <span className="title-line" style={{ gap: 7 }}>
                         <span className="set-artist truncate">{s.artist}</span>
-                        <span className="show-sm key-badge" style={hue(playKey)}>{playKey}</span>
+                        <span className="show-sm key-badge" style={hue(origKey)}>{origKey}</span>
                         <span className="show-sm mono" style={{ fontSize: 11, color: 'var(--faint)' }}>{s.bpm} {t('common.bpm')}</span>
                       </span>
                     </span>
@@ -132,12 +132,11 @@ export default function BunkerScreen() {
                 <div className="set-key">
                   <span
                     className="key-badge"
-                    style={hue(playKey)}
+                    style={hue(origKey)}
                     title={s.capo ? t('common.capoWith', { capo: s.capo }) : undefined}
                   >
-                    {playKey}
+                    {origKey}
                   </span>
-                  {steps !== 0 && <span className="set-capo">{t('instanceKey.fromKey', { key: songKey(s) })}</span>}
                   {s.capo > 0 && <span className="set-capo">{t('common.capoWith', { capo: s.capo })}</span>}
                 </div>
 
