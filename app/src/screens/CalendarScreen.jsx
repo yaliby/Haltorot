@@ -851,6 +851,7 @@ export default function CalendarScreen() {
                     const steps = eventSongSteps(event, s.id);
                     const playKey = instanceKey(s, steps);
                     const origKey = songKey(s);
+                    const showOrig = steps && origKey && origKey !== playKey;
                     return (
                     <button key={s.id} className="mini-row" onClick={() => navigate(`/song/${s.id}?from=${selected}`)}>
                       {/* The cover opens the row — the blank tile when there is
@@ -861,14 +862,12 @@ export default function CalendarScreen() {
                           <span className="mini-num">{i + 1}</span>
                           <span className="mini-title truncate">{s.title}</span>
                         </span>
-                        <span className="mini-sub">
-                          {s.artist}
-                          {steps && origKey && origKey !== playKey
-                            ? ` · ${t('instanceKey.originalShort', { key: origKey })}`
-                            : ''}
-                        </span>
+                        <span className="mini-sub">{s.artist}</span>
                       </span>
-                      <span className="key-badge" style={hue(playKey)}>{playKey}</span>
+                      <span className="mini-key">
+                        <span className="key-badge" style={hue(playKey)}>{playKey}</span>
+                        {showOrig ? <span className="key-badge is-plain">{origKey}</span> : null}
+                      </span>
                     </button>
                     );
                   })}
