@@ -79,7 +79,7 @@ function songToRow(s) {
     own: !!s.own,
     needs_work: !!s.needsWork,
     bunker: !!s.bunker,
-    bunker_steps: s.bunker ? (s.bunkerSteps || 0) : 0,
+    ...(instanceKeysOn() ? { bunker_steps: s.bunker ? (s.bunkerSteps || 0) : 0 } : {}),
     custom: !!s.custom,
     sections: s.sections ?? [],
     artwork: s.artwork ?? null,
@@ -89,6 +89,30 @@ function songToRow(s) {
     last_played: s.lastPlayedISO ?? null,
     import_source: s.importSource ?? null
   };
+}
+
+/* Instance keys need `songs.bunker_steps` and `event_songs.steps`. A build
+   can land before `db:apply` has run, and asking PostgREST for a missing
+   column throws — which used to empty the whole library on hydrate. Probe
+   once; until those columns exist, the feature stays in memory only. */
+let instanceKeyColumns = null;
+
+const missingColumn = (err) =>
+  !!err && (err.code === '42703' || /does not exist/i.test(err.message || ''));
+
+function instanceKeysOn() {
+  return instanceKeyColumns === true;
+}
+
+async function detectInstanceKeyColumns() {
+  if (instanceKeyColumns !== null) return instanceKeyColumns;
+  const { error } = await supabase.from('event_songs').select('steps').limit(1);
+  instanceKeyColumns = !error;
+  if (error && !missingColumn(error)) {
+    log.warn('instance-key column probe failed', { error: error.message });
+    instanceKeyColumns = false;
+  }
+  return instanceKeyColumns;
 }
 
 /** Rows for one date, assembled into the event object the screens read. */
@@ -113,9 +137,13 @@ function rowToEvent(r) {
 
 /** Everything the store needs, in one round trip per table. */
 export async function loadAll() {
+  const keyed = await detectInstanceKeyColumns();
+  const eventSelect = keyed
+    ? '*, event_songs(song_id, pos, done, steps), attendance(member_id, status)'
+    : '*, event_songs(song_id, pos, done), attendance(member_id, status)';
   const [songs, events, rooms] = await Promise.all([
     supabase.from('songs').select('*'),
-    supabase.from('events').select('*, event_songs(song_id, pos, done, steps), attendance(member_id, status)'),
+    supabase.from('events').select(eventSelect),
     supabase.from('rooms').select('name')
   ]);
   for (const r of [songs, events, rooms]) if (r.error) throw r.error;
@@ -143,7 +171,7 @@ async function writeSetlist(date, ev) {
         song_id: songId,
         pos,
         done: done.has(songId),
-        steps: ev.steps?.[songId] || 0
+        ...(instanceKeysOn() ? { steps: ev.steps?.[songId] || 0 } : {})
       }))
     )
   );
@@ -226,7 +254,7 @@ const writers = {
     if (!song) return;
     ok(await supabase.from('songs').update({
       bunker: !!song.bunker,
-      bunker_steps: song.bunker ? (song.bunkerSteps || 0) : 0
+      ...(instanceKeysOn() ? { bunker_steps: song.bunker ? (song.bunkerSteps || 0) : 0 } : {})
     }).eq('id', a.songId));
   },
   'edit-chart': async (a) => {
@@ -243,6 +271,7 @@ const writers = {
 export async function persist(action, nextState) {
   const write = writers[action.type];
   if (!dbEnabled || !write) return true;
+  if (instanceKeyColumns === null) await detectInstanceKeyColumns();
   try {
     await write(action, nextState);
     log.debug('persisted', { action: action.type });
