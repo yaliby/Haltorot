@@ -5,7 +5,7 @@ import { SongArt } from '../components/SongArt.jsx';
 import { useStore, useRooms } from '../store.jsx';
 import { useI18n } from '../i18n/index.js';
 import { BAND } from '../data.js';
-import { InstanceKeyBadge, InstanceKeyPicker } from '../components/InstanceKeyPicker.jsx';
+import { InstanceKeyBadge, InstanceKeyCell, InstanceKeyPicker } from '../components/InstanceKeyPicker.jsx';
 import { hue, memberHue, tempoHue } from '../lib/hues.js';
 import { eventSongSteps, instanceKey, songKey } from '../lib/chords.js';
 import { monthName, parseISO, longDate, weekdayOf, mmss, runtime, relative, isISODate, timeSpan } from '../lib/dates.js';
@@ -274,6 +274,7 @@ export default function RehearsalScreen() {
 
           <div className="scroll" style={{ padding: '6px 0 26px' }}>
             {visible.map((s) => {
+              const playKey = instanceKey(s, s.instanceSteps);
               const cls = [
                 'set-row',
                 drag.from === s.index && 'is-dragging',
@@ -322,23 +323,14 @@ export default function RehearsalScreen() {
                         </span>
                         <span className="title-line" style={{ gap: 7 }}>
                           <span className="set-artist truncate">{s.artist}</span>
-                          <span className="show-sm key-badge" style={hue(songKey(s))}>{songKey(s)}</span>
+                          <span className="show-sm key-badge" style={hue(playKey)}>{playKey}</span>
                           <span className="show-sm mono" style={{ fontSize: 11, color: 'var(--faint)' }}>{s.bpm} {t('common.bpm')}</span>
                         </span>
                       </span>
                     </button>
                   </div>
 
-                  <div className="set-key">
-                    <span
-                      className="key-badge"
-                      style={hue(songKey(s))}
-                      title={s.capo ? t('common.capoWith', { capo: s.capo }) : undefined}
-                    >
-                      {songKey(s)}
-                    </span>
-                    {s.capo > 0 && <span className="set-capo">{t('common.capoWith', { capo: s.capo })}</span>}
-                  </div>
+                  <InstanceKeyCell song={s} steps={s.instanceSteps} />
 
                   <div className="set-tempo">
                     <span className="tempo-dot" style={tempoHue(s.bpm)} />

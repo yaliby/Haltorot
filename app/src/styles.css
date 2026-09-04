@@ -405,8 +405,9 @@ textarea.field { height: 74px; padding: 10px 12px; resize: none; line-height: 1.
   padding: 2.5px 7px; border-radius: 5px;
 }
 .capo-mark svg { flex: 0 0 auto; }
-/* In a set list the key column has room for the capo under the badge. */
-.set-capo { display: block; margin-top: 4px; font-size: 9px; color: var(--fainter); }
+/* In a set list the key column has room for the capo — and the original
+   key, when this instance is not played as written — under the badge. */
+.set-capo, .set-key-original { display: block; margin-top: 4px; font-size: 9px; color: var(--fainter); }
 
 /* Instance transpose — only on a bunker / setlist row, never on the library. */
 .instance-key-tag {

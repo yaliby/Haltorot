@@ -5,7 +5,7 @@ import { useStore } from '../store.jsx';
 import { useI18n } from '../i18n/index.js';
 import { BAND } from '../data.js';
 import { hue, memberHue, tempoHue } from '../lib/hues.js';
-import { bunkerSongSteps, eventSongSteps, transpose, chordsUsed, songKey } from '../lib/chords.js';
+import { bunkerSongSteps, eventSongSteps, instanceKey, transpose, chordsUsed, songKey } from '../lib/chords.js';
 import { longDate, mmss, isISODate } from '../lib/dates.js';
 import { consumeNoteAutoShow } from '../lib/sessionNotes.js';
 import { hasHebrew } from '../lib/text.js';
@@ -61,6 +61,7 @@ export default function SongScreen() {
   const position = setSongs.findIndex((s) => s.id === id);
   const next = position >= 0 ? setSongs[position + 1] : null;
   const prev = position > 0 ? setSongs[position - 1] : null;
+  const nextKey = next ? instanceKey(next, event ? eventSongSteps(event, next.id) : 0) : '';
 
   const go = useCallback(
     (target) => target && navigate(`/song/${target.id}${inSet ? `?from=${inSet}` : ''}`),
@@ -678,7 +679,7 @@ export default function SongScreen() {
                 {next ? next.title : song.title}
               </div>
             </div>
-            {next && <span className="key-badge" style={hue(songKey(next))}>{songKey(next)}</span>}
+            {next && <span className="key-badge" style={hue(nextKey)}>{nextKey}</span>}
             <button
               className="btn"
               style={{ width: 46, height: 46, borderRadius: 12, padding: 0 }}

@@ -106,3 +106,24 @@ export function InstanceKeyBadge({ song, steps, title }) {
     </span>
   );
 }
+
+/** The key column: the played key, the original under it when they differ, and capo. */
+export function InstanceKeyCell({ song, steps }) {
+  const { t } = useI18n();
+  const n = clampSteps(steps);
+  const orig = songKey(song);
+  const play = instanceKey(song, n);
+  const transposed = n !== 0 && orig && orig !== play;
+  const capo = song?.capo > 0 ? t('common.capoWith', { capo: song.capo }) : '';
+  return (
+    <div className="set-key">
+      <span className="key-badge" style={hue(play)} title={capo || undefined}>
+        {play || '—'}
+      </span>
+      {transposed ? (
+        <span className="set-key-original">{t('instanceKey.originalShort', { key: orig })}</span>
+      ) : null}
+      {capo ? <span className="set-capo">{capo}</span> : null}
+    </div>
+  );
+}
