@@ -1,6 +1,6 @@
 export default {
   app: { title: 'Static Bloom — Rehearsals' },
-  nav: { calendar: 'Calendar', songs: 'Songs' },
+  nav: { calendar: 'Calendar', songs: 'Songs', bunker: 'Bunker' },
   shell: {
     thisMonth: 'This month',
     rehearsals: 'Rehearsals',
@@ -10,6 +10,25 @@ export default {
     langEn: 'EN',
     themeLight: 'Light mode',
     themeDark: 'Dark mode'
+  },
+  bunker: {
+    title: 'Bunker',
+    lede: 'The standing set. Every new rehearsal opens with these songs, in this order.',
+    count: '{n} songs · ~{time}',
+    countOne: '1 song · ~{time}',
+    list: 'In the bunker',
+    addSong: 'Add song',
+    addFromLibrary: 'Add from the library',
+    searchLibrary: 'Search the library',
+    remove: 'Take {title} out of the bunker',
+    removeButton: 'Remove',
+    removed: '{title} is out of the bunker',
+    added: '{title} is in the bunker',
+    empty: 'The bunker is empty. Songs you put here will be waiting in every new rehearsal.',
+    poolEmpty: 'Every song in the library is already in the bunker.',
+    poolNoMatch: 'Nothing in the library matches “{q}”',
+    libraryEmpty: 'The library is empty — import a song first.',
+    toLibrary: 'To the library'
   },
   toast: { undo: 'Undo' },
   roles: {
@@ -147,9 +166,6 @@ export default {
   library: {
     collections: 'Collections',
     allSongs: 'All songs',
-    bunker: 'Bunker',
-    bunkerIn: 'Add {title} to the bunker',
-    bunkerOut: 'Take {title} out of the bunker',
     originals: 'Originals',
     covers: 'Covers',
     hasChords: 'Has chords',

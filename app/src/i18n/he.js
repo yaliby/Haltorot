@@ -1,6 +1,6 @@
 export default {
   app: { title: 'Static Bloom — חזרות' },
-  nav: { calendar: 'לוח שנה', songs: 'שירים' },
+  nav: { calendar: 'לוח שנה', songs: 'שירים', bunker: 'בנקר' },
   shell: {
     thisMonth: 'החודש',
     rehearsals: 'חזרות',
@@ -10,6 +10,25 @@ export default {
     langEn: 'EN',
     themeLight: 'מצב בהיר',
     themeDark: 'מצב כהה'
+  },
+  bunker: {
+    title: 'בנקר',
+    lede: 'הסט הקבוע. כל חזרה חדשה נפתחת עם השירים האלה, לפי הסדר הזה.',
+    count: '{n} שירים · ~{time}',
+    countOne: 'שיר אחד · ~{time}',
+    list: 'השירים בבנקר',
+    addSong: 'הוסף שיר',
+    addFromLibrary: 'הוסף מהספרייה',
+    searchLibrary: 'חפש בספרייה',
+    remove: 'הוצא את {title} מהבנקר',
+    removeButton: 'הוצא',
+    removed: '{title} יצא מהבנקר',
+    added: '{title} נכנס לבנקר',
+    empty: 'הבנקר ריק. שירים שתוסיף לכאן יחכו בכל חזרה חדשה.',
+    poolEmpty: 'כל השירים בספרייה כבר בבנקר.',
+    poolNoMatch: 'אין בספרייה התאמה ל״{q}״',
+    libraryEmpty: 'הספרייה ריקה — ייבא שיר קודם.',
+    toLibrary: 'לספרייה'
   },
   toast: { undo: 'בטל' },
   roles: {
@@ -147,9 +166,6 @@ export default {
   library: {
     collections: 'אוספים',
     allSongs: 'כל השירים',
-    bunker: 'בנקר',
-    bunkerIn: 'הוסף את {title} לבנקר',
-    bunkerOut: 'הוצא את {title} מהבנקר',
     originals: 'מקוריים',
     covers: 'קאברים',
     hasChords: 'עם אקורדים',

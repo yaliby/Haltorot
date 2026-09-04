@@ -42,6 +42,10 @@ export default function SongScreen() {
   const song = songs.find((s) => s.id === id);
   const inSet = from && isISODate(from) && events[from] ? from : null;
   const event = inSet ? events[inSet] : null;
+  /* The bunker is not a day, so it is never a set to run through — but it is
+     somewhere the band opened the song from, and the way back leads there. */
+  const fromBunker = from === 'bunker';
+  const back = inSet ? `/rehearsal/${inSet}` : fromBunker ? '/bunker' : '/songs';
 
   const setSongs = useMemo(
     () => (event ? event.songs.map((sid) => songs.find((s) => s.id === sid)).filter(Boolean) : []),
@@ -127,14 +131,14 @@ export default function SongScreen() {
               ? setNoteOpen(false)
               : stage
                 ? setStage(false)
-                : navigate(inSet ? `/rehearsal/${inSet}` : '/songs')
+                : navigate(back)
       };
       const fn = map[e.key] || map[e.key.toLowerCase()];
       if (fn) { e.preventDefault(); fn(); }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [go, next, prev, stage, noteOpen, jumpOpen, inSet, navigate, align, canAlign, startAlign]);
+  }, [go, next, prev, stage, noteOpen, jumpOpen, back, navigate, align, canAlign, startAlign]);
 
   /* The chord in hand walks with the arrow keys — and a Hebrew line runs the
      other way, so "earlier in the words" is the other arrow. */
@@ -349,13 +353,15 @@ export default function SongScreen() {
       <main className={'main' + (stage ? ' is-stage' : '')}>
         <header className="song-head" style={stage ? { background: 'var(--bg)' } : undefined}>
           {!stage && (
-            <Link to={inSet ? `/rehearsal/${inSet}` : '/songs'} className="back">
+            <Link to={back} className="back">
               <Icon name="left" size={13} />
               {inSet
                 ? event.kind === 's'
                   ? t('song.backShow', { date: longDate(inSet, locale) })
                   : t('song.backRehearsal', { date: longDate(inSet, locale) })
-                : t('nav.songs')}
+                : fromBunker
+                  ? t('nav.bunker')
+                  : t('nav.songs')}
             </Link>
           )}
 

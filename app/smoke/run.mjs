@@ -13,6 +13,7 @@ const todayLong = longDate(TODAY, 'en');
 const routes = [
   ['/',                          [thisMonth, 'Static Bloom', 'Add rehearsal', 'Nothing scheduled']],
   ['/songs',                     ['Songs', 'Collections', 'Import online', 'The library is empty']],
+  ['/bunker',                    ['Bunker', 'The standing set', 'import a song first', 'Add from the library']],
   [`/rehearsal/${TODAY}`,        [todayLong, 'Nothing is booked', 'Book a rehearsal']],
   ['/rehearsal/2026-12-01',      ['Nothing is booked', 'Book a rehearsal']],
   ['/rehearsal/not-a-date',      ['is not a date on the calendar', 'Back to the calendar']],

@@ -8,6 +8,7 @@ import CalendarScreen from './screens/CalendarScreen.jsx';
 import RehearsalScreen from './screens/RehearsalScreen.jsx';
 import SongScreen from './screens/SongScreen.jsx';
 import LibraryScreen from './screens/LibraryScreen.jsx';
+import BunkerScreen from './screens/BunkerScreen.jsx';
 
 export default function App() {
   const { hydrating } = useStore();
@@ -18,6 +19,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<CalendarScreen />} />
           <Route path="/songs" element={<LibraryScreen />} />
+          <Route path="/bunker" element={<BunkerScreen />} />
           <Route path="/rehearsal/:date" element={<RehearsalScreen />} />
           <Route path="/song/:id" element={<SongScreen />} />
           <Route path="*" element={<Navigate to="/" replace />} />
