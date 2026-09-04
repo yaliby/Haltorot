@@ -1,6 +1,8 @@
 import React, { useState, useMemo, useRef, useEffect, useLayoutEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Icon } from '../components/Icon.jsx';
+import { LanguageToggle } from '../components/LanguageToggle.jsx';
+import { ThemeToggle } from '../components/ThemeToggle.jsx';
 import { useStore, useRooms } from '../store.jsx';
 import { useI18n } from '../i18n/index.js';
 import {
@@ -594,6 +596,10 @@ export default function CalendarScreen() {
                   </div>
                 ))}
               </div>
+            </div>
+            <div className="cal-head-toggles">
+              <LanguageToggle />
+              <ThemeToggle />
             </div>
           </div>
         </header>

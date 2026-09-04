@@ -211,16 +211,13 @@ h1, h2, h3 { margin: 0; font-family: var(--display); letter-spacing: -0.028em; f
   view-transition-name: app-toggles;
 }
 
-/* On the calendar the toggles sit in the header margin; the month strip should
-   slide in front of them, not tuck underneath. */
-.app-body:has(.cal-main) .app-toggles { z-index: 3; }
-.cal-main.is-dragging,
-.cal-main.is-settling {
-  position: relative;
-  z-index: 4;
-}
-
 .app:has(.is-stage) .app-toggles { display: none; }
+/* Calendar owns its toggles in the title row, so the overlay cannot sit
+   over the sliding month name. */
+.app-body:has(.cal-main) > .app-toggles {
+  display: none;
+  view-transition-name: none;
+}
 
 .rail {
   width: var(--rail);
@@ -452,6 +449,20 @@ textarea.field { height: 74px; padding: 10px 12px; resize: none; line-height: 1.
   padding-block: 2px 6px;
   margin-block: -2px -6px;
 }
+.cal-head-toggles {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  z-index: 1;
+  /* Opaque so a sliding name cannot show through the pill tracks. */
+  background: var(--bg);
+  padding-inline-start: 4px;
+  margin-block: -4px;
+  padding-block: 4px;
+  view-transition-name: app-toggles;
+}
 .cal-title { font-size: 34px; line-height: 1; white-space: nowrap; }
 .cal-year { font-family: var(--mono); font-size: 19px; color: var(--faint); }
 
@@ -491,6 +502,7 @@ textarea.field { height: 74px; padding: 10px 12px; resize: none; line-height: 1.
 }
 .cal-page { flex: 0 0 33.3333%; min-width: 0; }
 .cal-grid-track { height: 100%; }
+.cal-title-track { will-change: auto; }
 .cal-title-page { display: flex; align-items: baseline; gap: 10px; min-width: 0; }
 
 .cal-month {
