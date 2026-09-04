@@ -89,24 +89,6 @@ export function InstanceKeyPicker({ song, steps, onSteps, onConfirm, onCancel, c
   );
 }
 
-/** Shown beside a title when that bunker / setlist instance is not in the original key. */
-export function InstanceKeyBadge({ song, steps, title }) {
-  const { t } = useI18n();
-  const n = clampSteps(steps);
-  if (!n) return null;
-  const from = songKey(song);
-  const to = instanceKey(song, n);
-  return (
-    <span
-      className="instance-key-tag"
-      style={hue(to)}
-      title={title || t('instanceKey.badgeTitle', { from, to })}
-    >
-      {to}
-    </span>
-  );
-}
-
 /** The key column: the played key, the original under it when they differ, and capo. */
 export function InstanceKeyCell({ song, steps }) {
   const { t } = useI18n();

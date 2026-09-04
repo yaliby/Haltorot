@@ -39,7 +39,6 @@ export default {
     keyLabel: 'טון',
     defaultHint: 'ברירת המחדל היא הסולם המקורי של השיר. שינוי כאן נשאר על הבאנקר או על החזרה — לא על הספרייה.',
     changedHint: 'המופע הזה ינוגן ב־{to} (מ־{from}).',
-    badgeTitle: 'מנוגן ב־{to} (מקורי {from})',
     originalShort: 'מקורי {key}'
   },
   toast: { undo: 'בטל' },

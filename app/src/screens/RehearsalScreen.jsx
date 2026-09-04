@@ -5,7 +5,7 @@ import { SongArt } from '../components/SongArt.jsx';
 import { useStore, useRooms } from '../store.jsx';
 import { useI18n } from '../i18n/index.js';
 import { BAND } from '../data.js';
-import { InstanceKeyBadge, InstanceKeyCell, InstanceKeyPicker } from '../components/InstanceKeyPicker.jsx';
+import { InstanceKeyCell, InstanceKeyPicker } from '../components/InstanceKeyPicker.jsx';
 import { hue, memberHue, tempoHue } from '../lib/hues.js';
 import { eventSongSteps, instanceKey, songKey } from '../lib/chords.js';
 import { monthName, parseISO, longDate, weekdayOf, mmss, runtime, relative, isISODate, timeSpan } from '../lib/dates.js';
@@ -318,7 +318,6 @@ export default function RehearsalScreen() {
                         <span className="title-line">
                           <span className="set-num" style={{ width: 'auto' }}>{String(s.index + 1).padStart(2, '0')}</span>
                           <span className="set-title truncate">{s.title}</span>
-                          <InstanceKeyBadge song={s} steps={s.instanceSteps} />
                           {s.needsWork && <span className="tag tag-work">{t('common.needsWork')}</span>}
                         </span>
                         <span className="title-line" style={{ gap: 7 }}>

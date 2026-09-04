@@ -4,7 +4,7 @@ import { Icon } from '../components/Icon.jsx';
 import { SongArt } from '../components/SongArt.jsx';
 import { useStore } from '../store.jsx';
 import { useI18n } from '../i18n/index.js';
-import { InstanceKeyBadge, InstanceKeyCell, InstanceKeyPicker } from '../components/InstanceKeyPicker.jsx';
+import { InstanceKeyCell, InstanceKeyPicker } from '../components/InstanceKeyPicker.jsx';
 import { hue, tempoHue } from '../lib/hues.js';
 import { bunkerSongSteps, instanceKey, songKey } from '../lib/chords.js';
 import { mmss, runtime } from '../lib/dates.js';
@@ -117,7 +117,6 @@ export default function BunkerScreen() {
                       <span className="title-line">
                         <span className="set-num" style={{ width: 'auto' }}>{String(i + 1).padStart(2, '0')}</span>
                         <span className="set-title truncate">{s.title}</span>
-                        <InstanceKeyBadge song={s} steps={steps} />
                         {s.needsWork && <span className="tag tag-work">{t('common.needsWork')}</span>}
                       </span>
                       <span className="title-line" style={{ gap: 7 }}>

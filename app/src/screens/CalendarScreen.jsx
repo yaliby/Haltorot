@@ -19,7 +19,6 @@ import {
   dowLabels
 } from '../lib/dates.js';
 import { hue } from '../lib/hues.js';
-import { InstanceKeyBadge } from '../components/InstanceKeyPicker.jsx';
 import { eventSongSteps, instanceKey, songKey } from '../lib/chords.js';
 
 /* The month strip is a three-page carousel: previous, current, next. It rides
@@ -861,7 +860,6 @@ export default function CalendarScreen() {
                         <span className="mini-line">
                           <span className="mini-num">{i + 1}</span>
                           <span className="mini-title truncate">{s.title}</span>
-                          <InstanceKeyBadge song={s} steps={steps} />
                         </span>
                         <span className="mini-sub">
                           {s.artist}
