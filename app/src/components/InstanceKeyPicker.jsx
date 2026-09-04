@@ -43,7 +43,7 @@ export function InstanceKeyPicker({ song, steps, onSteps, onConfirm, onCancel, c
           <span className="instance-key-original-label">{t('instanceKey.original')}</span>
           <span className="mini-sub">{t('instanceKey.originalHint')}</span>
         </span>
-        <span className="key-badge" style={hue(original)}>{original || '—'}</span>
+        <span className="key-badge is-plain">{original || '—'}</span>
       </button>
 
       <div>
@@ -121,7 +121,11 @@ export function InstanceKeyCell({ song, steps }) {
         {play || '—'}
       </span>
       {transposed ? (
-        <span className="set-key-original">{t('instanceKey.originalShort', { key: orig })}</span>
+        <span className="set-key-original">
+          <span className="key-badge is-plain" title={t('instanceKey.originalShort', { key: orig })}>
+            {orig}
+          </span>
+        </span>
       ) : null}
       {capo ? <span className="set-capo">{capo}</span> : null}
     </div>

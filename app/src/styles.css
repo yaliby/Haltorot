@@ -386,6 +386,12 @@ textarea.field { height: 74px; padding: 10px 12px; resize: none; line-height: 1.
 }
 /* Ringed instead of bordered, so the ring costs the row no width. */
 .key-badge.is-twice { box-shadow: inset 0 0 0 1px oklch(var(--hue-lc) var(--h, 62) / 0.35); }
+/* The library key itself — no hue. The played key keeps the colour. */
+.key-badge.is-plain {
+  color: var(--dim);
+  background: var(--raised-2);
+  box-shadow: inset 0 0 0 1px var(--line-2);
+}
 .tag {
   font-size: 8.5px; font-weight: 700; letter-spacing: 0.1em;
   padding: 2.5px 5px; border-radius: 4px; flex: 0 0 auto; white-space: nowrap;
@@ -407,7 +413,9 @@ textarea.field { height: 74px; padding: 10px 12px; resize: none; line-height: 1.
 .capo-mark svg { flex: 0 0 auto; }
 /* In a set list the key column has room for the capo — and the original
    key, when this instance is not played as written — under the badge. */
-.set-capo, .set-key-original { display: block; margin-top: 4px; font-size: 9px; color: var(--fainter); }
+.set-capo { display: block; margin-top: 4px; font-size: 9px; color: var(--dim); }
+.set-key-original { display: block; margin-top: 4px; }
+.set-key-original .key-badge { font-size: 10px; padding: 2px 6px; }
 
 /* Instance transpose — only on a bunker / setlist row, never on the library. */
 .instance-key-tag {
