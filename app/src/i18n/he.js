@@ -116,7 +116,6 @@ export default {
     runtime: 'משך',
     reviewed: 'נלחן',
     setlist: 'רשימת שירים',
-    firstN: 'ראשונים {n}',
     noSongsYet: 'אין שירים עדיין. בנה את הרשימה במסך החזרה.',
     emptyDay: 'אין תזמון. תפוס את החדר לפני שמישהו אחר.',
     addedShow: 'הופעה נוספה · {date}',

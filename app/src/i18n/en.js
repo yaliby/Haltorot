@@ -116,7 +116,6 @@ export default {
     runtime: 'runtime',
     reviewed: 'reviewed',
     setlist: 'Setlist',
-    firstN: 'first {n}',
     noSongsYet: 'No songs yet. Build the setlist on the rehearsal screen.',
     emptyDay: "Nothing scheduled. Book the room while it's still free.",
     addedShow: 'Show added · {date}',

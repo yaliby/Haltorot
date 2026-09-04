@@ -845,13 +845,10 @@ export default function CalendarScreen() {
             </div>
 
             {setSongs.length > 0 ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div className="eyebrow">{t('calendar.setlist')}</div>
-                  <span style={{ fontSize: 11, color: 'var(--fainter)' }}>{t('calendar.firstN', { n: Math.min(4, setSongs.length) })}</span>
-                </div>
-                <div>
-                  {setSongs.slice(0, 4).map((s, i) => {
+              <div className="panel-set">
+                <div className="eyebrow">{t('calendar.setlist')}</div>
+                <div className="panel-set-list">
+                  {setSongs.map((s, i) => {
                     const steps = eventSongSteps(event, s.id);
                     const playKey = instanceKey(s, steps);
                     const origKey = songKey(s);

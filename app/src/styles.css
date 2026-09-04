@@ -623,7 +623,18 @@ html[dir="ltr"] .cal-head-title {
   display: flex; flex-direction: column;
   overflow-y: auto;
 }
-.panel-inner { padding: 24px 22px 30px; display: flex; flex-direction: column; gap: 20px; }
+.panel-inner { padding: 24px 22px 30px; display: flex; flex-direction: column; gap: 20px; flex: 1; min-height: 0; }
+/* The day's setlist is the whole rehearsal — it scrolls instead of cutting
+   off after the first few songs. */
+.panel-set { display: flex; flex-direction: column; gap: 9px; flex: 1; min-height: 0; }
+.panel-set-list {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  min-height: 0;
+  flex: 1 1 auto;
+  margin-inline: -8px;
+  padding-inline: 8px;
+}
 
 /* The peek header, its action bar and the scrim only exist once the panel
    becomes a sheet. */
@@ -1315,7 +1326,10 @@ button.att-status:hover { filter: brightness(1.3); }
   }
   .panel.is-open .sheet-peek { border-bottom: 1px solid var(--line); }
 
-  .panel-inner { padding: 6px 16px 24px; }
+  .panel-inner { padding: 6px 16px 24px; flex: none; }
+  /* The sheet itself scrolls; don't trap the setlist in a nested pane. */
+  .panel-set { flex: none; }
+  .panel-set-list { overflow: visible; flex: none; }
   /* The sticky sheet header already names the day — don't say it twice.
      !important because these blocks carry inline layout styles. */
   .panel-head { display: none !important; }
