@@ -435,7 +435,7 @@ textarea.field { height: 74px; padding: 10px 12px; resize: none; line-height: 1.
 .cal-head-row {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
   width: 100%;
 }
 .cal-head-title {
@@ -449,18 +449,21 @@ textarea.field { height: 74px; padding: 10px 12px; resize: none; line-height: 1.
   padding-block: 2px 6px;
   margin-block: -2px -6px;
 }
+/* Dissolve the sliding month in the gap, not against the language pill
+   and not inside the rectangular plate that used to sit behind the toggles. */
+html[dir="rtl"] .cal-head-title {
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 36px, #000 100%);
+  mask-image: linear-gradient(to right, transparent, #000 36px, #000 100%);
+}
+html[dir="ltr"] .cal-head-title {
+  -webkit-mask-image: linear-gradient(to left, transparent, #000 36px, #000 100%);
+  mask-image: linear-gradient(to left, transparent, #000 36px, #000 100%);
+}
 .cal-head-toggles {
   flex: 0 0 auto;
   display: flex;
   align-items: center;
   gap: 8px;
-  position: relative;
-  z-index: 1;
-  /* Opaque so a sliding name cannot show through the pill tracks. */
-  background: var(--bg);
-  padding-inline-start: 4px;
-  margin-block: -4px;
-  padding-block: 4px;
   view-transition-name: app-toggles;
 }
 .cal-title { font-size: 34px; line-height: 1; white-space: nowrap; }
