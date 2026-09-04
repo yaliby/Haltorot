@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Icon } from '../components/Icon.jsx';
+import { SongArt } from '../components/SongArt.jsx';
 import { useStore, useRooms } from '../store.jsx';
 import { useI18n } from '../i18n/index.js';
 import { BAND } from '../data.js';
@@ -310,18 +311,21 @@ export default function RehearsalScreen() {
 
                   <div className="set-body grow">
                     <button
+                      className="set-open"
                       onClick={() => navigate(`/song/${s.id}?from=${date}`)}
-                      style={{ display: 'flex', flexDirection: 'column', gap: 2, textAlign: 'start', width: '100%' }}
                     >
-                      <span className="title-line">
-                        <span className="show-sm set-num" style={{ width: 'auto' }}>{String(s.index + 1).padStart(2, '0')}</span>
-                        <span className="set-title truncate">{s.title}</span>
-                        {s.needsWork && <span className="tag tag-work">{t('common.needsWork')}</span>}
-                      </span>
-                      <span className="title-line" style={{ gap: 7 }}>
-                        <span className="set-artist truncate">{s.artist}</span>
-                        <span className="show-sm key-badge" style={hue(songKey(s))}>{songKey(s)}</span>
-                        <span className="show-sm mono" style={{ fontSize: 11, color: 'var(--faint)' }}>{s.bpm} {t('common.bpm')}</span>
+                      <SongArt song={s} fallback="note" />
+                      <span className="set-lines">
+                        <span className="title-line">
+                          <span className="show-sm set-num" style={{ width: 'auto' }}>{String(s.index + 1).padStart(2, '0')}</span>
+                          <span className="set-title truncate">{s.title}</span>
+                          {s.needsWork && <span className="tag tag-work">{t('common.needsWork')}</span>}
+                        </span>
+                        <span className="title-line" style={{ gap: 7 }}>
+                          <span className="set-artist truncate">{s.artist}</span>
+                          <span className="show-sm key-badge" style={hue(songKey(s))}>{songKey(s)}</span>
+                          <span className="show-sm mono" style={{ fontSize: 11, color: 'var(--faint)' }}>{s.bpm} {t('common.bpm')}</span>
+                        </span>
                       </span>
                     </button>
                   </div>
