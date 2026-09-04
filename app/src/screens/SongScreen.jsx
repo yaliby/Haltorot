@@ -596,7 +596,7 @@ export default function SongScreen() {
               <div className="empty empty-plain">
                 <Icon name="lines" size={30} style={{ color: 'var(--fainter)' }} />
                 <p>
-                  {t('song.noChart', { title: song.title, key: song.key, bpm: song.bpm })}
+                  {t('song.noChart', { title: song.title, key: displayKey, bpm: song.bpm })}
                 </p>
                 <Link className="ghost" to={inSet ? `/rehearsal/${inSet}` : '/songs'}>
                   {inSet ? t('song.backSet') : t('song.backSongs')}
