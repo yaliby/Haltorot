@@ -231,28 +231,6 @@ export default function CalendarScreen() {
     return p;
   }
 
-  /** The month the strip is bound for — what a button should count from. */
-  function heading() {
-    return slide && slide.index !== 1 ? slide.month : view;
-  }
-
-  function goMonth(delta) {
-    if (!delta || drag.current) return;
-    const from = heading();
-    land();
-    settle(indexFor(delta), addMonths(from.y, from.m, delta));
-  }
-
-  function goToday() {
-    if (drag.current) return;
-    const from = heading();
-    const delta = (start.y * 12 + start.m) - (from.y * 12 + from.m);
-    pickDay(today);
-    if (delta === 0) return; // already there, or already on the way
-    land();
-    settle(indexFor(delta), { y: start.y, m: start.m });
-  }
-
   // The strip only carries a transition while it is settling, so landing —
   // where the view shifts and the strip jumps back to centre — never animates.
   // `hold` is a position handed over from a slide that was caught by hand.
@@ -617,18 +595,6 @@ export default function CalendarScreen() {
                 ))}
               </div>
             </div>
-          </div>
-
-          <div className="cal-head-ctl">
-              <button className="icon-btn bordered" aria-label={t('calendar.prevMonth')} onClick={() => goMonth(-1)}>
-                <Icon name="left" size={15} />
-              </button>
-              <button className="icon-btn bordered" aria-label={t('calendar.nextMonth')} onClick={() => goMonth(1)}>
-                <Icon name="right" size={15} />
-              </button>
-              <button className="ghost" onClick={goToday}>
-              {t('calendar.today')}
-            </button>
           </div>
         </header>
 
